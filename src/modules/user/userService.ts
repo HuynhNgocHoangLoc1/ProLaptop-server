@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Multer } from 'multer';
 import { User } from "../../entities/user.entity";
@@ -38,13 +38,41 @@ export class UserService {
   }
 
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto, avatar?: Multer.File) {
+    try {
+      const user = await this.usersRepository.findOneBy({ id });
+      if (!user) {
+        return { message: 'User not found' };
+      }
+      console.log('ava', avatar);
+      if (avatar) {
+        await this.deleteOldAvatar(user);
+        user.avatar = await this.uploadAndReturnUrl(avatar);
+      }
+      user.userName = updateUserDto.userName;
+      user.password = updateUserDto.password;
+      user.email = updateUserDto.email;
+      user.gender = updateUserDto.gender;
+      user.address = updateUserDto.address;
+      user.phone = updateUserDto.phone;
+
+      await this.entityManager.save(user);
+    } catch (error) {
+      throw error;
+    }
+  }
+  async remove(id: string) {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.deleteOldAvatar(user);
+    await this.usersRepository.remove(user);
+    return { message: 'Successfully removed user' };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+ 
 
   async deleteOldAvatar(user: User): Promise<void> {
     if (user.avatar) {
