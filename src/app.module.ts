@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import {UserModule} from "./modules/user/user.module";
 import { DbModule } from './common/db/db.module';
 import { ConfigModule } from '@nestjs/config';
+import { CloudinaryService } from './modules/cloudinary/cloudinary.service';
 
 @Module({
   imports: [
@@ -12,6 +13,9 @@ import { ConfigModule } from '@nestjs/config';
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    CloudinaryService 
+  ],
 })
 export class AppModule {}

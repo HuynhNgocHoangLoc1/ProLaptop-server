@@ -21,29 +21,31 @@ export class User extends AbstractEntity {
   password: string = '123456789';
 
   @Column()
-  code: string;
-
-  @Column()
   email: string;
 
+  @Column({ type: 'enum', enum: GenderEnum, nullable: false })
+  gender: GenderEnum;
+
   @Column()
-  phone: string;
+  address: string;
 
   @Column({ nullable: true })
-  dateOfBirth: Date;
+  phone: String;
 
   @Column({ nullable: true })
   avatar: string =
     'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png';
 
-  @Column({ type: 'enum', enum: GenderEnum, nullable: false })
-  gender: GenderEnum;
+  // @Column({
+  //   type: 'enum',
+  //   enum: RoleEnum,
+  //   default: RoleEnum.STUDENT,
+  //   nullable: false,
+  // })
+  // role: RoleEnum;
 
-  @Column({
-    type: 'enum',
-    enum: RoleEnum,
-    default: RoleEnum.STUDENT,
-    nullable: false,
-  })
-  role: RoleEnum;
+  constructor(user: Partial<User>) {
+    super();
+    Object.assign(this, user);
+  }
 }
