@@ -3,28 +3,25 @@ export enum GenderEnum {
   FEMALE = 'female',
 }
 
-export enum TermEnum {
-  AGREE = 'agree',
-  DISAGREE = 'disagree',
+export enum StatusEnum {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
 }
 
-export enum StatusEnum {
-  APPROVE = 'approve',
+export enum StatusPay {
+  SUCCESS = 'success',
   PENDING = 'pending',
-  REJECT = 'reject',
+}
+
+export enum StatusDelivery {
+  SUCCESS = 'success',
+  PENDING = 'pending',
+  DELIVERING = 'delivering',
 }
 
 export enum RoleEnum {
-  ADMIN = 'admin',
-  STUDENT = 'student',
-  MM = 'marketing manager',
-  MC = 'marketing coordinator',
-  GUEST = 'guest',
-}
-
-export enum TypeFileEnum {
-  IMAGE = 'img',
-  DOCX = 'docx',
+  STORE_OWNER = 'admin',
+  CUSTOMER = 'user',
 }
 
 export enum Order {

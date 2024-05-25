@@ -20,13 +20,19 @@ export class UserController {
   }
 
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  async findAll() {
+    const users = await this.userService.findAll();
+    return { users, message: 'Successfully fetched all users' };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const user = await this.userService.findOne(id);
+    if (user) {
+      return { user, message: 'Successfully fetched user' };
+    } else {
+      return { message: `User with ID ${id} not found` };
+    }
   }
 
   @Patch(':id')

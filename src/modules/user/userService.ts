@@ -29,13 +29,14 @@ export class UserService {
   }
 
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll(): Promise<User[]> {
+    return await this.usersRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string): Promise<User> {
+    return await this.usersRepository.findOne({ where: { id } });
   }
+
 
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
