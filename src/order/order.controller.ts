@@ -41,7 +41,8 @@ export class OrderController {
 
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const result = await this.orderService.remove(id);
+    return result;
   }
 }

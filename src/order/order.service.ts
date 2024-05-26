@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -42,7 +42,11 @@ export class OrderService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async remove(id: string): Promise<{ message: string }> {
+    const result = await this.ordersRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+    return { message: `Successfully removed order #${id}` };
   }
 }
