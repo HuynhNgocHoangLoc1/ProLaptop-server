@@ -4,7 +4,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { CloudinaryService } from 'src/modules/cloudinary/cloudinary.service';
-import { Order} from '../entities/order.entity'
+import { Order} from '../../entities/order.entity'
 @Injectable()
 export class OrderService {
   constructor(
