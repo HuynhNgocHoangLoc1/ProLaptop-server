@@ -18,13 +18,14 @@ export class OrderService {
     return { order, message: 'Successfully created order' };
   }
 
-  findAll() {
-    return `This action returns all order`;
+  async findAll(): Promise<Order[]> {
+    return await this.ordersRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async findOne(id: string): Promise<Order> {
+    return await this.ordersRepository.findOne({ where: { id } });
   }
+
 
   update(id: number, updateOrderDto: UpdateOrderDto) {
     return `This action updates a #${id} order`;

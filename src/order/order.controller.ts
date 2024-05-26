@@ -15,13 +15,19 @@ export class OrderController {
 
 
   @Get()
-  findAll() {
-    return this.orderService.findAll();
+  async findAll() {
+    const orders = await this.orderService.findAll();
+    return { orders, message: 'Successfully fetched all orders' };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const order = await this.orderService.findOne(id);
+    if (order) {
+      return { order, message: 'Successfully fetched order' };
+    } else {
+      return { message: `Order with ID ${id} not found` };
+    }
   }
 
   @Patch(':id')
