@@ -27,8 +27,19 @@ export class OrderService {
   }
 
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async update(id: string, updateOrderDto: UpdateOrderDto) {
+    const order = await this.ordersRepository.findOneBy({ id });
+    if (order) {
+      order.userId = updateOrderDto.userId;
+      order.date = updateOrderDto.date;
+      order.name = updateOrderDto.name;
+      order.email = updateOrderDto.email;
+      order.phoneNumber = updateOrderDto.phoneNumber;
+      order.address = updateOrderDto.address;
+      order.price = updateOrderDto.price;
+      await this.entityManager.save(order);
+      return { order, message: 'Successfully update magazine' };
+    }
   }
 
   remove(id: number) {
