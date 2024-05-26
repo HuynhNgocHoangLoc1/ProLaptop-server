@@ -1,4 +1,4 @@
-import { GenderEnum, RoleEnum } from '../common/enum/enum';
+import { GenderEnum } from '../common/enum/enum';
 import { AbstractEntity } from '../common/entities/abstract.entity';
 import {
   Column,
