@@ -9,8 +9,8 @@ export class OrderController {
 
  
   @Post()
-  async create(@Body() createUserDto: CreateOrderDto) {
-    return this.orderService.create(createUserDto);
+  async create(@Body() createOrderDto: CreateOrderDto) {
+    return this.orderService.create(createOrderDto);
   }
 
 

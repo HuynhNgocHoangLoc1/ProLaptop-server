@@ -1,4 +1,4 @@
-import { AbstractEntity } from "src/common/entities";
+import { AbstractEntity } from "../common/entities/abstract.entity";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -24,8 +24,8 @@ export class Order extends AbstractEntity{
     @Column()
     address: string;
 
-    @Column()
-    price: string;
+    @Column({ default: 0 }) 
+    price: number;
 
     constructor(order: Partial<Order>) {
         super();

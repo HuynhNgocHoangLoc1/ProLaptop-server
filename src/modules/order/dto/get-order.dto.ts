@@ -7,5 +7,5 @@ export class GetUserParams extends PageOptionsDto {
  email: string;
  phoneNumber: string;
  address: string;
- price: string;
+ price: number;
 }

@@ -20,5 +20,5 @@ export class CreateOrderDto {
     address: string;
 
     @IsNotEmpty()
-    price: string;
+    price: number;
 }
