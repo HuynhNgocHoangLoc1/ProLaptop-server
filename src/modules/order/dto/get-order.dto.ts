@@ -1,6 +1,6 @@
 import { PageOptionsDto } from "src/common/dtos/pageOption";
 
-export class GetUserParams extends PageOptionsDto {
+export class GetOrderParams extends PageOptionsDto {
  userId: string;
  date: Date;
  name: string;

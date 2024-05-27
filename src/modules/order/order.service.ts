@@ -38,7 +38,7 @@ export class OrderService {
       order.address = updateOrderDto.address;
       order.price = updateOrderDto.price;
       await this.entityManager.save(order);
-      return { order, message: 'Successfully update magazine' };
+      return { order, message: 'Successfully update order' };
     }
   }
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDetailDto } from './dto/create-order-detail.dto';
 import { UpdateOrderDetailDto } from './dto/update-order-detail.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,7 +9,7 @@ import { OrderDetail } from 'src/entities/order-detail.entity';
 export class OrderDetailService {
   constructor(
     @InjectRepository(OrderDetail)
-    private readonly ordersRepository: Repository<OrderDetail>,
+    private readonly orderDetailsRepository: Repository<OrderDetail>,
     private readonly entityManager: EntityManager,
   ) { }
   async create(createOrderDetailDto: CreateOrderDetailDto) {
@@ -18,19 +18,33 @@ export class OrderDetailService {
     return { orderDetail, message: 'Successfully created order' };
   }
 
-  findAll() {
-    return `This action returns all orderDetail`;
+  async findAll(): Promise<OrderDetail[]> {
+    return await this.orderDetailsRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} orderDetail`;
+  async findOne(id: string): Promise<OrderDetail> {
+    return await this.orderDetailsRepository.findOne({ where: { id } });
   }
 
-  update(id: number, updateOrderDetailDto: UpdateOrderDetailDto) {
-    return `This action updates a #${id} orderDetail`;
+  async update(id: string, updateOrderDetailDto: UpdateOrderDetailDto) {
+    const orderDetail = await this.orderDetailsRepository.findOneBy({ id });
+    if (orderDetail) {
+      orderDetail.orderId = updateOrderDetailDto.orderId;
+      orderDetail.productId = updateOrderDetailDto.productId;
+      orderDetail.quantity = updateOrderDetailDto.quantity;
+      orderDetail.price = updateOrderDetailDto.price;
+      
+      await this.entityManager.save(orderDetail);
+      return { orderDetail, message: 'Successfully update orderDetail' };
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} orderDetail`;
+
+  async remove(id: string): Promise<{ message: string }> {
+    const result = await this.orderDetailsRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`OrderDetail with ID ${id} not found`);
+    }
+    return { message: `Successfully removed ordeDetail #${id}` };
   }
 }
