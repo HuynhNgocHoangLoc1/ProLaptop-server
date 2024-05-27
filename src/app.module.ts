@@ -6,6 +6,7 @@ import { DbModule } from './common/db/db.module';
 import { ConfigModule } from '@nestjs/config';
 import { CloudinaryService } from './modules/cloudinary/cloudinary.service';
 import { OrderModule } from './modules/order/order.module';
+import { OrderDetailModule } from './order-detail/order-detail.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { OrderModule } from './modules/order/order.module';
     DbModule,
     UserModule,
     OrderModule,
+    OrderDetailModule,
   ],
   controllers: [AppController],
   providers: [
