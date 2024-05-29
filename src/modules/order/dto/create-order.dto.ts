@@ -17,7 +17,7 @@ export class CreateOrderDto {
     phoneNumber: string;
 
     @IsNotEmpty()
-    address: string;
+    shippingAddress: string;
 
     @IsNotEmpty()
     price: number;

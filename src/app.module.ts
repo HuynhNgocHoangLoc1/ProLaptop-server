@@ -6,7 +6,8 @@ import { DbModule } from './common/db/db.module';
 import { ConfigModule } from '@nestjs/config';
 import { CloudinaryService } from './modules/cloudinary/cloudinary.service';
 import { OrderModule } from './modules/order/order.module';
-import { OrderDetailModule } from './order-detail/order-detail.module';
+import { OrderDetailModule } from './modules/order-detail/order-detail.module';
+import { ReviewModule } from './modules/review/review.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { OrderDetailModule } from './order-detail/order-detail.module';
     UserModule,
     OrderModule,
     OrderDetailModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [

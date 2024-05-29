@@ -22,7 +22,7 @@ export class Order extends AbstractEntity{
     phoneNumber: string;
 
     @Column()
-    address: string;
+    shippingAddress: string;
 
     @Column({ default: 0 }) 
     price: number;

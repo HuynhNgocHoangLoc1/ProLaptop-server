@@ -35,7 +35,7 @@ export class OrderService {
       order.name = updateOrderDto.name;
       order.email = updateOrderDto.email;
       order.phoneNumber = updateOrderDto.phoneNumber;
-      order.address = updateOrderDto.address;
+      order.shippingAddress = updateOrderDto.shippingAddress;
       order.price = updateOrderDto.price;
       await this.entityManager.save(order);
       return { order, message: 'Successfully update order' };

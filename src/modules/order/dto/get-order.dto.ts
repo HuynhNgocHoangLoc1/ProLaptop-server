@@ -6,6 +6,6 @@ export class GetOrderParams extends PageOptionsDto {
  name: string;
  email: string;
  phoneNumber: string;
- address: string;
+ shippingAddress: string;
  price: number;
 }
