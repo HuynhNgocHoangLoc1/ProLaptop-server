@@ -15,13 +15,19 @@ export class ReviewController {
 
 
   @Get()
-  findAll() {
-    return this.reviewService.findAll();
+  async findAll() {
+    const reviews = await this.reviewService.findAll();
+    return { reviews, message: 'Successfully fetched all reviews' };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reviewService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const review = await this.reviewService.findOne(id);
+    if (review) {
+      return { review, message: 'Successfully fetched review' };
+    } else {
+      return { message: `review with ID ${id} not found` };
+    }
   }
 
   @Patch(':id')

@@ -18,14 +18,13 @@ export class ReviewService {
     return { review, message: 'Successfully created review' };
   }
 
-  findAll() {
-    return `This action returns all review`;
+  async findAll(): Promise<Review[]> {
+    return await this.reviewsRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} review`;
+  async findOne(id: string): Promise<Review> {
+    return await this.reviewsRepository.findOne({ where: { id } });
   }
-
   update(id: number, updateReviewDto: UpdateReviewDto) {
     return `This action updates a #${id} review`;
   }
