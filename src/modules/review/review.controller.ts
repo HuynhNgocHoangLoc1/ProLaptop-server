@@ -42,7 +42,8 @@ export class ReviewController {
 
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reviewService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const result = await this.reviewService.remove(id);
+    return result;
   }
 }
