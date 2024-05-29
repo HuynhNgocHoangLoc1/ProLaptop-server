@@ -8,6 +8,7 @@ import { CloudinaryService } from './modules/cloudinary/cloudinary.service';
 import { OrderModule } from './modules/order/order.module';
 import { OrderDetailModule } from './modules/order-detail/order-detail.module';
 import { ReviewModule } from './modules/review/review.module';
+import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ReviewModule } from './modules/review/review.module';
     OrderModule,
     OrderDetailModule,
     ReviewModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [
