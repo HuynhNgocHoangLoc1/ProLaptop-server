@@ -25,8 +25,18 @@ export class ReviewService {
   async findOne(id: string): Promise<Review> {
     return await this.reviewsRepository.findOne({ where: { id } });
   }
-  update(id: number, updateReviewDto: UpdateReviewDto) {
-    return `This action updates a #${id} review`;
+  async update(id: string, updateReviewDto: UpdateReviewDto) {
+    const review = await this.reviewsRepository.findOneBy({ id });
+    if (review) {
+      review.productId = updateReviewDto.productId;
+      review.orderId = updateReviewDto.orderId;
+      review.rating = updateReviewDto.rating;
+      review.comment = updateReviewDto.comment;
+      review.date = updateReviewDto.date;
+      
+      await this.entityManager.save(review);
+      return { review, message: 'Successfully update review' };
+    }
   }
 
   remove(id: number) {

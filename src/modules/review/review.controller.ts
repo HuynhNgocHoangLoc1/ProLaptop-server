@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, ValidationPipe } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -30,10 +30,16 @@ export class ReviewController {
     }
   }
 
+  
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
-    return this.reviewService.update(+id, updateReviewDto);
+  async update(
+    @Param('id') id: string,
+    @Body(new ValidationPipe()) updateReviewDto: UpdateReviewDto,
+  ) {
+    const result = await this.reviewService.update(id, updateReviewDto);
+    return { result, message: 'Successfully update review' };
   }
+
 
   @Delete(':id')
   remove(@Param('id') id: string) {
