@@ -9,6 +9,7 @@ import { OrderModule } from './modules/order/order.module';
 import { OrderDetailModule } from './modules/order-detail/order-detail.module';
 import { ReviewModule } from './modules/review/review.module';
 import { CategoryModule } from './modules/category/category.module';
+import { ShippingAddressModule } from './modules/shipping-address/shipping-address.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CategoryModule } from './modules/category/category.module';
     OrderDetailModule,
     ReviewModule,
     CategoryModule,
+    ShippingAddressModule,
   ],
   controllers: [AppController],
   providers: [
