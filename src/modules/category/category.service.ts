@@ -18,13 +18,14 @@ export class CategoryService {
     return { category, message: 'Successfully created category' };
   }
 
-  findAll() {
-    return `This action returns all category`;
+  async findAll(): Promise<Category[]> {
+    return await this.categorysRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  async findOne(id: string): Promise<Category> {
+    return await this.categorysRepository.findOne({ where: { id } });
   }
+
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {
     return `This action updates a #${id} category`;

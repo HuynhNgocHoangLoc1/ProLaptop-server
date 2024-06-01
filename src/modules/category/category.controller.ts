@@ -11,16 +11,22 @@ export class CategoryController {
   async create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
   }
-
   @Get()
-  findAll() {
-    return this.categoryService.findAll();
+  async findAll() {
+    const categorys = await this.categoryService.findAll();
+    return { categorys, message: 'Successfully fetched all categorys' };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoryService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const category = await this.categoryService.findOne(id);
+    if (category) {
+      return { category, message: 'Successfully fetched category' };
+    } else {
+      return { message: `Category with ID ${id} not found` };
+    }
   }
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
