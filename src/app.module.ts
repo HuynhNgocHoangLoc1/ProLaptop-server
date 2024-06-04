@@ -10,6 +10,7 @@ import { OrderDetailModule } from './modules/order-detail/order-detail.module';
 import { ReviewModule } from './modules/review/review.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ShippingAddressModule } from './modules/shipping-address/shipping-address.module';
+import { ProductModule } from './modules/product/product.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ShippingAddressModule } from './modules/shipping-address/shipping-addre
     ReviewModule,
     CategoryModule,
     ShippingAddressModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [
