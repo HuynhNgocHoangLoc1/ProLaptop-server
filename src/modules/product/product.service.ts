@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from 'src/entities/product.entity';
@@ -10,6 +10,8 @@ import { GetProductDto } from './dto/get-product.dto';
 import { PageMetaDto } from 'src/common/dtos/pageMeta';
 import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
 import { Order } from 'src/common/enum/enum'
+import { ProductNotFoundException, UserNotFoundException } from 'src/common/exception/not-found';
+import { validate as uuidValidate } from 'uuid';
 
 
 @Injectable()
@@ -63,12 +65,48 @@ export class ProductService {
     return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto, imageUrl?: Multer.File) {
+    try {
+      const product = await this.productsRepository.findOneBy({ id });
+      if (!uuidValidate(id)) {
+        throw new BadRequestException('Invalid UUID');
+      }
+      console.log('ava', imageUrl);
+      if (imageUrl) {
+        await this.deleteOldImageUrl(product);
+        product.imageUrl = await this.uploadAndReturnUrl(imageUrl);
+      }
+      product.name = updateProductDto.name;
+      product.description = updateProductDto.description;
+      product.categoryId = updateProductDto.categoryId;
+      product.price = updateProductDto.price;
+      product.stockQuantity = updateProductDto.stockQuantity;
+      product.ram = updateProductDto.ram;
+      product.cpu = updateProductDto.cpu;
+      product.card = updateProductDto.card;
+      product.chip = updateProductDto.chip;
+      product.hardDrive = updateProductDto.hardDrive;
+
+
+      await this.entityManager.save(product);
+    } catch (error) {
+      throw error;
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    if (!uuidValidate(id)) {
+      throw new BadRequestException('Invalid UUID');
+    }
+    const product = await this.productsRepository
+      .createQueryBuilder('product')
+      .where('product.id = :id', { id })
+      .getOne();
+      if (!product) {
+        throw new ProductNotFoundException();
+      }
+    await this.productsRepository.softDelete(id);
+    return { data: null, message: 'product deletion successful' };
   }
 
   //Cloudinary
