@@ -36,11 +36,6 @@ export class ShippingAddressController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const result = await this.shippingAddressService.remove(id);
-    if (result.message) {
-      return { message: result.message };
-    } else {
-      return { data: result.data, message: 'Success' };
-    }
+  return this.shippingAddressService.remove(id);
   }
 }

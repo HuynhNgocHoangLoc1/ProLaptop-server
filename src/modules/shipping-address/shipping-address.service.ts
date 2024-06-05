@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
 import { UpdateShippingAddressDto } from './dto/update-shipping-address.dto';
 import { ShippingAddress } from 'src/entities/shipping-address.entity';
@@ -8,6 +8,8 @@ import { PageMetaDto } from 'src/common/dtos/pageMeta';
 import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
 import { Order } from 'src/common/enum/enum'
 import { GetShippingAddressDto } from './dto/get-shipping-address.dto';
+import { validate as uuidValidate } from 'uuid';
+import { UserNotFoundException } from 'src/common/exception/not-found';
 
 @Injectable()
 export class ShippingAddressService {
@@ -54,10 +56,13 @@ export class ShippingAddressService {
   async update(
   id: string, updateShippingAddressDto: UpdateShippingAddressDto,
 ) {
+  if (!uuidValidate(id)) {
+    throw new BadRequestException('Invalid UUID');
+  }
   try {
     const shippingAddress = await this.shippingAddressRepository.findOneBy({ id });
     if (!shippingAddress) {
-      return { message: 'Address not found' };
+      throw new UserNotFoundException();
     }
     shippingAddress.district = updateShippingAddressDto.district;
     shippingAddress.address = updateShippingAddressDto.address;
@@ -70,13 +75,16 @@ export class ShippingAddressService {
 }
 
 async remove(id: string) {
+  if (!uuidValidate(id)) {
+    throw new BadRequestException('Invalid UUID');
+  }
   const shippingAddress = await this.shippingAddressRepository
     .createQueryBuilder('shippingAddress')
     .where('shippingAddress.id = :id', { id })
     .getOne();
-  if (!shippingAddress) {
-    return { message: 'shippingAddress not found' };
-  }
+    if (!shippingAddress) {
+      throw new UserNotFoundException();
+    }
   await this.shippingAddressRepository.softDelete(id);
   return { data: null, message: 'shippingAddress deletion successful' };
 }
