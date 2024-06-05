@@ -6,6 +6,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Multer } from 'multer';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { GetProductDto } from './dto/get-product.dto';
+import { PageMetaDto } from 'src/common/dtos/pageMeta';
+import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
+import { Order } from 'src/common/enum/enum'
+
 
 @Injectable()
 export class ProductService {
@@ -29,12 +34,33 @@ export class ProductService {
     return { product, message: 'Successfully create product' };
   }
 
-  findAll() {
-    return `This action returns all product`;
+  async findAll(params: GetProductDto) {
+    const product = this.productsRepository
+      .createQueryBuilder('product')
+      .select(['product'])
+      .skip(params.skip)
+      .take(params.take)
+      .orderBy('product.createdAt', Order.DESC);
+    if (params.search) {
+      product.andWhere('product.product ILIKE :product', {
+        product: `%${params.search}%`,
+      });
+    }
+    const [result, total] = await product.getManyAndCount();
+    const pageMetaDto = new PageMetaDto({
+      itemCount: total,
+      pageOptionsDto: params,
+    });
+    return new ResponsePaginate(result, pageMetaDto, 'Success');
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOneById(id: string) {
+    const product = await this.productsRepository
+      .createQueryBuilder('product')
+      .select(['product'])
+      .where('product.id = :id', { id })
+      .getOne();
+    return product;
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {

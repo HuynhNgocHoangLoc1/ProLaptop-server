@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Multer } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { GetProductDto } from './dto/get-product.dto';
 
 
 @Controller('product')
@@ -20,13 +21,13 @@ export class ProductController {
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  async findAll(@Query() params: GetProductDto) {
+    return this.productService.findAll(params);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  async findOneById(@Param('id') id: string) {
+    return this.productService.findOneById(id);
   }
 
   @Patch(':id')
