@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, Query } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { GetCategoryDto } from './dto/get-category.dto';
 
 @Controller('category')
 export class CategoryController {
@@ -11,20 +12,15 @@ export class CategoryController {
   async create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
   }
+  
   @Get()
-  async findAll() {
-    const categorys = await this.categoryService.findAll();
-    return { categorys, message: 'Successfully fetched all categorys' };
+  async findAll(@Query() params: GetCategoryDto) {
+    return this.categoryService.findAll(params);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const category = await this.categoryService.findOne(id);
-    if (category) {
-      return { category, message: 'Successfully fetched category' };
-    } else {
-      return { message: `Category with ID ${id} not found` };
-    }
+  async findOneById(@Param('id') id: string) {
+    return this.categoryService.findOneById(id);
   }
 
 
@@ -40,7 +36,6 @@ export class CategoryController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const result = await this.categoryService.remove(id);
-    return result;
+  return this.categoryService.remove(id);
   }
 }
