@@ -1,13 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, ValidationPipe, Query } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { GetReviewDto } from './dto/get-review.dto';
 
 @Controller('review')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
- 
   @Post()
   async create(@Body() createReviewDto: CreateReviewDto) {
     return this.reviewService.create(createReviewDto);
@@ -15,20 +15,15 @@ export class ReviewController {
 
 
   @Get()
-  async findAll() {
-    const reviews = await this.reviewService.findAll();
-    return { reviews, message: 'Successfully fetched all reviews' };
+  async findAll(@Query() params: GetReviewDto) {
+    return this.reviewService.findAll(params);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const review = await this.reviewService.findOne(id);
-    if (review) {
-      return { review, message: 'Successfully fetched review' };
-    } else {
-      return { message: `review with ID ${id} not found` };
-    }
+  async findOneById(@Param('id') id: string) {
+    return this.reviewService.findOneById(id);
   }
+
 
   
   @Patch(':id')
@@ -43,7 +38,6 @@ export class ReviewController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const result = await this.reviewService.remove(id);
-    return result;
+  return this.reviewService.remove(id);
   }
 }
