@@ -23,7 +23,7 @@ export class Product extends AbstractEntity{
     stockQuantity: number;
     
     @Column({ nullable: true })
-    imageUrl: string;
+    imageUrl: string = 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png';
     
     @Column()
     ram: string;

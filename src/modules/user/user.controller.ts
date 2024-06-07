@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, ValidationPipe, Query } from '@nestjs/common';
 import { UserService } from './userService';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+import { GetUserDto } from './dto/get-user.dto';
 
 
 @Controller('user')
@@ -20,19 +21,13 @@ export class UserController {
   }
 
   @Get()
-  async findAll() {
-    const users = await this.userService.findAll();
-    return { users, message: 'Successfully fetched all users' };
+  async findAll(@Query() params: GetUserDto) {
+    return this.userService.findAll(params);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const user = await this.userService.findOne(id);
-    if (user) {
-      return { user, message: 'Successfully fetched user' };
-    } else {
-      return { message: `User with ID ${id} not found` };
-    }
+  async findOneById(@Param('id') id: string) {
+    return this.userService.findOneById(id);
   }
 
   @Patch(':id')
@@ -40,15 +35,13 @@ export class UserController {
   async update(
     @Param('id') id: string,
     @Body(new ValidationPipe()) updateUserDto: UpdateUserDto,
-    @UploadedFile() avatar?: Multer.File,
   ) {
-    const result = await this.userService.update(id, updateUserDto, avatar);
+    const result = await this.userService.update(id, updateUserDto);
     return { result, message: 'Successfully update user' };
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const result = await this.userService.remove(id);
-    return result;
+  return this.userService.remove(id);
   }
 }

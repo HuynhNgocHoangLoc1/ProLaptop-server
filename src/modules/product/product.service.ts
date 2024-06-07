@@ -71,7 +71,7 @@ export class ProductService {
       if (!uuidValidate(id)) {
         throw new BadRequestException('Invalid UUID');
       }
-      console.log('ava', imageUrl);
+      console.log('image', imageUrl);
       if (imageUrl) {
         await this.deleteOldImageUrl(product);
         product.imageUrl = await this.uploadAndReturnUrl(imageUrl);
@@ -86,7 +86,6 @@ export class ProductService {
       product.card = updateProductDto.card;
       product.chip = updateProductDto.chip;
       product.hardDrive = updateProductDto.hardDrive;
-
 
       await this.entityManager.save(product);
     } catch (error) {

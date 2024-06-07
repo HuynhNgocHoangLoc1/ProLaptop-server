@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Multer } from 'multer';
 import { User } from "../../entities/user.entity";
@@ -6,6 +6,12 @@ import { Repository, EntityManager } from "typeorm";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { GetUserDto } from "./dto/get-user.dto";
+import { Order } from 'src/common/enum/enum'
+import { PageMetaDto } from "src/common/dtos/pageMeta";
+import { ResponsePaginate } from "src/common/dtos/responsePaginate";
+import { validate as uuidValidate } from 'uuid';
+import { ProductNotFoundException } from "src/common/exception/not-found";
 
 
 @Injectable()
@@ -29,22 +35,42 @@ export class UserService {
   }
 
 
-  async findAll(): Promise<User[]> {
-    return await this.usersRepository.find();
+  async findAll(params: GetUserDto) {
+    const user = this.usersRepository
+      .createQueryBuilder('user')
+      .select(['user'])
+      .skip(params.skip)
+      .take(params.take)
+      .orderBy('user.createdAt', Order.DESC);
+    if (params.search) {
+      user.andWhere('user.user ILIKE :user', {
+        user: `%${params.search}%`,
+      });
+    }
+    const [result, total] = await user.getManyAndCount();
+    const pageMetaDto = new PageMetaDto({
+      itemCount: total,
+      pageOptionsDto: params,
+    });
+    return new ResponsePaginate(result, pageMetaDto, 'Success');
   }
 
-  async findOne(id: string): Promise<User> {
-    return await this.usersRepository.findOne({ where: { id } });
+  async findOneById(id: string) {
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .select(['user'])
+      .where('user.id = :id', { id })
+      .getOne();
+    return user;
   }
-
 
   async update(id: string, updateUserDto: UpdateUserDto, avatar?: Multer.File) {
     try {
       const user = await this.usersRepository.findOneBy({ id });
-      if (!user) {
-        return { message: 'User not found' };
+      if (!uuidValidate(id)) {
+        throw new BadRequestException('Invalid UUID');
       }
-      console.log('ava', avatar);
+      console.log('avatar', avatar);
       if (avatar) {
         await this.deleteOldAvatar(user);
         user.avatar = await this.uploadAndReturnUrl(avatar);
@@ -61,19 +87,23 @@ export class UserService {
       throw error;
     }
   }
+
   async remove(id: string) {
-    const user = await this.usersRepository.findOneBy({ id });
-    if (!user) {
-      throw new NotFoundException('User not found');
+    if (!uuidValidate(id)) {
+      throw new BadRequestException('Invalid UUID');
     }
-
-    await this.deleteOldAvatar(user);
-    await this.usersRepository.remove(user);
-    return { message: 'Successfully removed user' };
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.id = :id', { id })
+      .getOne();
+      if (!user) {
+        throw new ProductNotFoundException();
+      }
+    await this.usersRepository.softDelete(id);
+    return { data: null, message: 'user deletion successful' };
   }
-
  
-
+  //Cloudinary
   async deleteOldAvatar(user: User): Promise<void> {
     if (user.avatar) {
       const publicId = this.cloudinaryService.extractPublicIdFromUrl(

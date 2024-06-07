@@ -1,7 +1,7 @@
 import { PageOptionsDto } from "src/common/dtos/pageOption";
 import { GenderEnum } from "src/common/enum/enum";
 
-export class GetUserParams extends PageOptionsDto {
+export class GetUserDto extends PageOptionsDto {
     userName: string;
     password: string;
     email: string;
