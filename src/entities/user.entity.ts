@@ -8,6 +8,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Orders } from './order.entity';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -43,6 +44,12 @@ export class User extends AbstractEntity {
   //   nullable: false,
   // })
   // role: RoleEnum;
+ 
+  @OneToMany(() => Orders, (order) => order.user, {
+    cascade: true,
+    onUpdate: 'CASCADE',
+  })
+  order: Orders[];
 
   constructor(user: Partial<User>) {
     super();
