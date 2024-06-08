@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, Query } from '@nestjs/common';
 import { OrderDetailService } from './order-detail.service';
 import { CreateOrderDetailDto } from './dto/create-order-detail.dto';
 import { UpdateOrderDetailDto } from './dto/update-order-detail.dto';
+import { GetOrderDetailDto } from './dto/get-order-detail.dto';
 
 @Controller('order-detail')
 export class OrderDetailController {
@@ -13,19 +14,13 @@ export class OrderDetailController {
   } 
 
   @Get()
-  async findAll() {
-    const orderDetails = await this.orderDetailService.findAll();
-    return { orderDetails, message: 'Successfully fetched all orderDetails' };
+  async findAll(@Query() params: GetOrderDetailDto) {
+    return this.orderDetailService.findAll(params);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const orderDetail = await this.orderDetailService.findOne(id);
-    if (orderDetail) {
-      return { orderDetail, message: 'Successfully fetched orderDetail' };
-    } else {
-      return { message: `Order with ID ${id} not found` };
-    }
+  async findOneById(@Param('id') id: string) {
+    return this.orderDetailService.findOneById(id);
   }
 
   @Patch(':id')
@@ -39,7 +34,6 @@ export class OrderDetailController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const result = await this.orderDetailService.remove(id);
-    return result;
+  return this.orderDetailService.remove(id);
   }
 }
