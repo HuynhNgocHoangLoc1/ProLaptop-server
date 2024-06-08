@@ -1,5 +1,6 @@
 import { AbstractEntity } from "../common/entities/abstract.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Orders } from "./order.entity";
 
 @Entity()
 export class ShippingAddress extends AbstractEntity{
@@ -15,6 +16,7 @@ export class ShippingAddress extends AbstractEntity{
     @Column()
     city: string;
 
+   
     constructor(shippingAddress: Partial<ShippingAddress>) {
         super();
         Object.assign(this, shippingAddress);
