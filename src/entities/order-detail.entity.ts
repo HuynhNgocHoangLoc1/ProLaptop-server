@@ -1,5 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { AbstractEntity } from "../common/entities/abstract.entity";
+import { Orders } from "./order.entity";
+import { Product } from "./product.entity";
 
 @Entity()
 export class OrderDetail extends AbstractEntity {
@@ -17,6 +19,16 @@ export class OrderDetail extends AbstractEntity {
 
     @Column({ default: 0 })
     price: number;
+
+    @ManyToOne(() => Orders, (order) => order.orderDetail)
+    @JoinColumn({ name: 'orderId', referencedColumnName: 'id' })
+    order: Orders;
+
+    @ManyToOne(() => Product, (product) => product.orderDetail)
+    @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
+    product: Product;
+
+
 
     constructor(orderDetail: Partial<OrderDetail>) {
         super();

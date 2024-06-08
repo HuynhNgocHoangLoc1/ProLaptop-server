@@ -1,6 +1,9 @@
 
 import { AbstractEntity } from "../common/entities/abstract.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { OrderDetail } from "./order-detail.entity";
+import { Review } from "./review.entity";
+import { Category } from "./category.entity";
 
 @Entity()
 export class Product extends AbstractEntity{
@@ -39,6 +42,22 @@ export class Product extends AbstractEntity{
     
     @Column()
     hardDrive: string;
+
+    @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.product, {
+      cascade: true,
+      onUpdate: 'CASCADE',
+    })
+    orderDetail: OrderDetail[];
+
+    @OneToMany(() => Review, (review) => review.product, {
+      cascade: true,
+      onUpdate: 'CASCADE',
+    })
+    review: Review[];
+
+    @ManyToOne(() => Category, (category) => category.product)
+    @JoinColumn({ name: 'categoryId', referencedColumnName: 'id' })
+    category: Category;
 
     constructor(product: Partial<Product>) {
         super();

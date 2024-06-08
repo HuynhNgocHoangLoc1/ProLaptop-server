@@ -1,5 +1,6 @@
 import { AbstractEntity } from 'src/common/entities';
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Product } from './product.entity';
 
 @Entity()
 export class Review extends AbstractEntity {
@@ -20,6 +21,11 @@ export class Review extends AbstractEntity {
 
     @Column()
     date: Date;
+
+    @ManyToOne(() => Product, (product) => product.review)
+    @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
+    product: Product;
+
 
     constructor(review: Partial<Review>) {
         super();
