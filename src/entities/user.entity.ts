@@ -1,4 +1,4 @@
-import { GenderEnum } from '../common/enum/enum';
+import { GenderEnum, RoleEnum } from '../common/enum/enum';
 import { AbstractEntity } from '../common/entities/abstract.entity';
 import {
   Column,
@@ -37,13 +37,13 @@ export class User extends AbstractEntity {
   avatar: string =
     'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png';
 
-  // @Column({
-  //   type: 'enum',
-  //   enum: RoleEnum,
-  //   default: RoleEnum.STUDENT,
-  //   nullable: false,
-  // })
-  // role: RoleEnum;
+  @Column({
+    type: 'enum',
+    enum: RoleEnum,
+    default: RoleEnum.USER,
+    nullable: false,
+  })
+  role: RoleEnum;
  
   @OneToMany(() => Orders, (order) => order.user, {
     cascade: true,

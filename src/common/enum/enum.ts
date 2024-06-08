@@ -20,8 +20,8 @@ export enum StatusDelivery {
 }
 
 export enum RoleEnum {
-  STORE_OWNER = 'admin',
-  CUSTOMER = 'user',
+  ADMIN = 'admin',
+  USER = 'user',
 }
 
 export enum Order {

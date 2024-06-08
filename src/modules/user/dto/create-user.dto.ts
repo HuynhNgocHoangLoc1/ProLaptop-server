@@ -1,5 +1,5 @@
 import { IsNotEmpty } from "class-validator";
-import { GenderEnum } from "src/common/enum/enum";
+import { GenderEnum, RoleEnum } from "src/common/enum/enum";
 
 export class CreateUserDto {
     @IsNotEmpty()
@@ -14,4 +14,6 @@ export class CreateUserDto {
     address: string;
     @IsNotEmpty()
     phone: String;
+    @IsNotEmpty()
+    role: RoleEnum;
 }

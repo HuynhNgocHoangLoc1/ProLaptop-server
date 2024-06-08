@@ -1,5 +1,5 @@
 import { PageOptionsDto } from "src/common/dtos/pageOption";
-import { GenderEnum } from "src/common/enum/enum";
+import { GenderEnum, RoleEnum } from "src/common/enum/enum";
 
 export class GetUserDto extends PageOptionsDto {
     userName: string;
@@ -9,4 +9,5 @@ export class GetUserDto extends PageOptionsDto {
     address: string;
     phone: string;
     avatar: string;
+    role: RoleEnum;
 }
