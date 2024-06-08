@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, Query } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { GetOrderDto } from './dto/get-order.dto';
 
 @Controller('order')
 export class OrderController {
@@ -15,19 +16,13 @@ export class OrderController {
 
 
   @Get()
-  async findAll() {
-    const orders = await this.orderService.findAll();
-    return { orders, message: 'Successfully fetched all orders' };
+  async findAll(@Query() params: GetOrderDto) {
+    return this.orderService.findAll(params);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const order = await this.orderService.findOne(id);
-    if (order) {
-      return { order, message: 'Successfully fetched order' };
-    } else {
-      return { message: `Order with ID ${id} not found` };
-    }
+  async findOneById(@Param('id') id: string) {
+    return this.orderService.findOneById(id);
   }
 
   @Patch(':id')
@@ -42,7 +37,6 @@ export class OrderController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const result = await this.orderService.remove(id);
-    return result;
+  return this.orderService.remove(id);
   }
 }

@@ -1,35 +1,71 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { CloudinaryService } from 'src/modules/cloudinary/cloudinary.service';
-import { Order} from '../../entities/order.entity'
+import { GetOrderDto } from './dto/get-order.dto';
+import { Orders } from 'src/entities/order.entity';
+import {Order} from '../../common/enum/enum'
+import { PageMetaDto } from 'src/common/dtos/pageMeta';
+import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
+import { UserNotFoundException } from 'src/common/exception/not-found';
+import { validate as uuidValidate } from 'uuid';
+
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectRepository(Order)
-    private readonly ordersRepository: Repository<Order>,
+    @InjectRepository(Orders)
+    private readonly ordersRepository: Repository<Orders>,
     private readonly entityManager: EntityManager,
   ) { }
   async create(createOrderDto: CreateOrderDto) {
-    const order = new Order(createOrderDto);
+    const order = new Orders(createOrderDto);
     await this.entityManager.save(order);
     return { order, message: 'Successfully created order' };
   }
 
-  async findAll(): Promise<Order[]> {
-    return await this.ordersRepository.find();
+  async findAll(params: GetOrderDto) {
+    const order = this.ordersRepository
+      .createQueryBuilder('order')
+      .select(['order'])
+      .skip(params.skip)
+      .take(params.take)
+      .orderBy('order.createdAt', Order.DESC);
+    if (params.search) {
+      order.andWhere('order.order ILIKE :order', {
+        order: `%${params.search}%`,
+      });
+    }
+    const [result, total] = await order.getManyAndCount();
+    const pageMetaDto = new PageMetaDto({
+      itemCount: total,
+      pageOptionsDto: params,
+    });
+    return new ResponsePaginate(result, pageMetaDto, 'Success');
   }
 
-  async findOne(id: string): Promise<Order> {
-    return await this.ordersRepository.findOne({ where: { id } });
+  async findOneById(id: string) {
+    const order = await this.ordersRepository
+      .createQueryBuilder('order')
+      .select(['order'])
+      .where('order.id = :id', { id })
+      .getOne();
+    return order;
   }
 
 
-  async update(id: string, updateOrderDto: UpdateOrderDto) {
-    const order = await this.ordersRepository.findOneBy({ id });
-    if (order) {
+  async update(
+    id: string, updateOrderDto: UpdateOrderDto,
+  ) {
+    if (!uuidValidate(id)) {
+      throw new BadRequestException('Invalid UUID');
+    }
+    try {
+      const order = await this.ordersRepository.findOneBy({ id });
+      if (!order) {
+        throw new UserNotFoundException();
+      }
       order.userId = updateOrderDto.userId;
       order.date = updateOrderDto.date;
       order.name = updateOrderDto.name;
@@ -37,16 +73,25 @@ export class OrderService {
       order.phoneNumber = updateOrderDto.phoneNumber;
       order.shippingAddress = updateOrderDto.shippingAddress;
       order.price = updateOrderDto.price;
+  
       await this.entityManager.save(order);
-      return { order, message: 'Successfully update order' };
+    } catch (error) {
+      throw error;
     }
   }
 
-  async remove(id: string): Promise<{ message: string }> {
-    const result = await this.ordersRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
+  async remove(id: string) {
+    if (!uuidValidate(id)) {
+      throw new BadRequestException('Invalid UUID');
     }
-    return { message: `Successfully removed order #${id}` };
+    const order = await this.ordersRepository
+      .createQueryBuilder('order')
+      .where('order.id = :id', { id })
+      .getOne();
+      if (!order) {
+        throw new UserNotFoundException();
+      }
+    await this.ordersRepository.softDelete(id);
+    return { data: null, message: 'order deletion successful' };
   }
 }

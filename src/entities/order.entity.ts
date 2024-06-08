@@ -2,7 +2,7 @@ import { AbstractEntity } from "../common/entities/abstract.entity";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Order extends AbstractEntity{
+export class Orders extends AbstractEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
@@ -27,8 +27,8 @@ export class Order extends AbstractEntity{
     @Column({ default: 0 }) 
     price: number;
 
-    constructor(order: Partial<Order>) {
+    constructor(orders: Partial<Orders>) {
         super();
-        Object.assign(this, order);
+        Object.assign(this, orders);
       }
 }
