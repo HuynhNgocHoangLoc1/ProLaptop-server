@@ -39,9 +39,9 @@ export class Orders extends AbstractEntity{
   @JoinColumn({ name: 'shippingAddressId', referencedColumnName: 'id' })
   address: ShippingAddress;
 
-  @OneToOne(() => Review, { nullable: true })
-  @JoinColumn({ name: 'reviewId', referencedColumnName: 'id' })
-  review: ShippingAddress;
+  // @OneToOne(() => Review, { nullable: true })
+  // @JoinColumn({ name: 'reviewId', referencedColumnName: 'id' })
+  // review: Review;
 
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order, {
     cascade: true,

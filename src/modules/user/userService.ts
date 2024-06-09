@@ -12,6 +12,7 @@ import { PageMetaDto } from "src/common/dtos/pageMeta";
 import { ResponsePaginate } from "src/common/dtos/responsePaginate";
 import { validate as uuidValidate } from 'uuid';
 import { ProductNotFoundException } from "src/common/exception/not-found";
+import { Orders } from "src/entities/order.entity";
 
 
 @Injectable()
@@ -88,16 +89,39 @@ export class UserService {
     }
   }
 
+  // async remove(id: string) {
+    // if (!uuidValidate(id)) {
+    //   throw new BadRequestException('Invalid UUID');
+    // }
+  //   const user = await this.usersRepository
+  //     .createQueryBuilder('user')
+  //     .where('user.id = :id', { id })
+  //     .getOne();
+  //     if (!user) {
+  //       throw new ProductNotFoundException();
+  //     }
+  //   await this.usersRepository.softDelete(id);
+  //   return { data: null, message: 'user deletion successful' };
+  // }
+
   async remove(id: string) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
     const user = await this.usersRepository
       .createQueryBuilder('user')
+      .leftJoinAndSelect('user.order', 'order')
       .where('user.id = :id', { id })
       .getOne();
-      if (!user) {
-        throw new ProductNotFoundException();
+      if (!uuidValidate(id)) {
+        throw new BadRequestException('Invalid UUID');
+      }
+      if (
+        user.order &&
+        user.order.length > 0
+      ) {
+        for (const order of user.order) {
+          await this.entityManager.softDelete(Orders, {
+            id: order.id,
+          });
+        }
       }
     await this.usersRepository.softDelete(id);
     return { data: null, message: 'user deletion successful' };

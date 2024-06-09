@@ -11,6 +11,8 @@ import { PageMetaDto } from 'src/common/dtos/pageMeta';
 import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
 import { UserNotFoundException } from 'src/common/exception/not-found';
 import { validate as uuidValidate } from 'uuid';
+import { OrderDetail } from 'src/entities/order-detail.entity';
+import { Review } from 'src/entities/review.entity';
 
 @Injectable()
 export class OrderService {
@@ -18,6 +20,8 @@ export class OrderService {
     @InjectRepository(Orders)
     private readonly ordersRepository: Repository<Orders>,
     private readonly entityManager: EntityManager,
+    @InjectRepository(Review)
+    private readonly reviewsRepository: Repository<Review>,
   ) { }
   async create(createOrderDto: CreateOrderDto) {
     const order = new Orders(createOrderDto);
@@ -81,17 +85,32 @@ export class OrderService {
   }
 
   async remove(id: string) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
     const order = await this.ordersRepository
       .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderDetail', 'orderDetail')
       .where('order.id = :id', { id })
       .getOne();
-      if (!order) {
-        throw new UserNotFoundException();
+    if (!order) {
+      return { message: 'Order not found' };
+    }
+
+    const review = await this.reviewsRepository
+    .createQueryBuilder('review')
+    .where('review.orderId = :id', { id })
+    .getOne();
+
+  if (review) {
+    await this.reviewsRepository.softDelete(review.id);
+  }
+
+    if (order.orderDetail && order.orderDetail.length > 0) {
+      for (const orderDetail of order.orderDetail) {
+        await this.entityManager.softDelete(OrderDetail, {
+          id: orderDetail.id,
+        });
       }
+    }
     await this.ordersRepository.softDelete(id);
-    return { data: null, message: 'order deletion successful' };
+    return { data: null, message: 'Order deletion successful' };
   }
 }
