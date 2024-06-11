@@ -89,21 +89,6 @@ export class UserService {
     }
   }
 
-  // async remove(id: string) {
-    // if (!uuidValidate(id)) {
-    //   throw new BadRequestException('Invalid UUID');
-    // }
-  //   const user = await this.usersRepository
-  //     .createQueryBuilder('user')
-  //     .where('user.id = :id', { id })
-  //     .getOne();
-  //     if (!user) {
-  //       throw new ProductNotFoundException();
-  //     }
-  //   await this.usersRepository.softDelete(id);
-  //   return { data: null, message: 'user deletion successful' };
-  // }
-
   async remove(id: string) {
     const user = await this.usersRepository
       .createQueryBuilder('user')

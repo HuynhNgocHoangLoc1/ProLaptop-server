@@ -9,9 +9,9 @@ import { OrderDetail } from 'src/entities/order-detail.entity';
 import { ReviewService } from '../review/review.service';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Orders]),
+    TypeOrmModule.forFeature([Orders, Review]),
   ],
   controllers: [OrderController],
-  providers: [OrderService],
+  providers: [OrderService, ReviewService],
 })
 export class OrderModule {}

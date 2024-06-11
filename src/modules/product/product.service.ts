@@ -12,6 +12,7 @@ import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
 import { Order } from 'src/common/enum/enum'
 import { ProductNotFoundException, UserNotFoundException } from 'src/common/exception/not-found';
 import { validate as uuidValidate } from 'uuid';
+import { Review } from 'src/entities/review.entity';
 
 
 @Injectable()
@@ -94,15 +95,23 @@ export class ProductService {
   }
 
   async remove(id: string) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
     const product = await this.productsRepository
       .createQueryBuilder('product')
+      .leftJoinAndSelect('product.review', 'review')
       .where('product.id = :id', { id })
       .getOne();
-      if (!product) {
-        throw new ProductNotFoundException();
+      if (!uuidValidate(id)) {
+        throw new BadRequestException('Invalid UUID');
+      }
+      if (
+        product.review &&
+        product.review.length > 0
+      ) {
+        for (const review of product.review) {
+          await this.entityManager.softDelete(Review, {
+            id: review.id,
+          });
+        }
       }
     await this.productsRepository.softDelete(id);
     return { data: null, message: 'product deletion successful' };

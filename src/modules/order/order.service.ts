@@ -14,6 +14,7 @@ import { validate as uuidValidate } from 'uuid';
 import { OrderDetail } from 'src/entities/order-detail.entity';
 import { Review } from 'src/entities/review.entity';
 
+
 @Injectable()
 export class OrderService {
   constructor(
@@ -90,9 +91,9 @@ export class OrderService {
       .leftJoinAndSelect('order.orderDetail', 'orderDetail')
       .where('order.id = :id', { id })
       .getOne();
-    if (!order) {
-      return { message: 'Order not found' };
-    }
+      if (!uuidValidate(id)) {
+        throw new BadRequestException('Invalid UUID');
+      }
 
     const review = await this.reviewsRepository
     .createQueryBuilder('review')
