@@ -12,6 +12,7 @@ import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
 import { Order } from 'src/common/enum/enum'
 import { ProductNotFoundException, UserNotFoundException } from 'src/common/exception/not-found';
 import { validate as uuidValidate } from 'uuid';
+import { OrderDetail } from 'src/entities/order-detail.entity';
 import { Review } from 'src/entities/review.entity';
 
 
@@ -98,6 +99,7 @@ export class ProductService {
     const product = await this.productsRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.review', 'review')
+      .leftJoinAndSelect('product.orderDetail', 'orderDetail')
       .where('product.id = :id', { id })
       .getOne();
       if (!uuidValidate(id)) {
@@ -110,6 +112,17 @@ export class ProductService {
         for (const review of product.review) {
           await this.entityManager.softDelete(Review, {
             id: review.id,
+          });
+        }
+      }
+
+      if (
+        product.orderDetail &&
+        product.orderDetail.length > 0
+      ) {
+        for (const orderDetail of product.orderDetail) {
+          await this.entityManager.softDelete(OrderDetail, {
+            id: orderDetail.id,
           });
         }
       }
