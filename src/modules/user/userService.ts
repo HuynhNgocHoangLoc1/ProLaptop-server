@@ -78,11 +78,12 @@ export class UserService {
       }
       user.userName = updateUserDto.userName;
       user.password = updateUserDto.password;
-      user.email = updateUserDto.email;
+      user.email = updateUserDto.email; 
       user.gender = updateUserDto.gender;
       user.address = updateUserDto.address;
       user.phone = updateUserDto.phone;
-
+      user.role = updateUserDto.role;
+      
       await this.entityManager.save(user);
     } catch (error) {
       throw error;

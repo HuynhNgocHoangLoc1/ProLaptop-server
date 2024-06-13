@@ -11,6 +11,7 @@ import { ReviewModule } from './modules/review/review.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ShippingAddressModule } from './modules/shipping-address/shipping-address.module';
 import { ProductModule } from './modules/product/product.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ProductModule } from './modules/product/product.module';
     CategoryModule,
     ShippingAddressModule,
     ProductModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

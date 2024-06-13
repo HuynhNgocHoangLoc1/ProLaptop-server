@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, Query, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { GetOrderDto } from './dto/get-order.dto';
+import { AuthGuard } from '../auth/utils/auth.gruad';
+import { RolesGuard } from '../auth/utils/role.middleware';
+import { RoleEnum } from 'src/common/enum/enum';
 
 @Controller('order')
 export class OrderController {
@@ -16,6 +19,7 @@ export class OrderController {
 
 
   @Get()
+  @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER]))
   async findAll(@Query() params: GetOrderDto) {
     return this.orderService.findAll(params);
   }

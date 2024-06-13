@@ -14,6 +14,5 @@ export class CreateUserDto {
     address: string;
     @IsNotEmpty()
     phone: String;
-    @IsNotEmpty()
-    role: RoleEnum;
+  
 }

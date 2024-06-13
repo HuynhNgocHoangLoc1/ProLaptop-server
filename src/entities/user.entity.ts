@@ -15,10 +15,10 @@ export class User extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   userName: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string = '123456789';
 
   @Column()
