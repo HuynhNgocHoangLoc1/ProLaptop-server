@@ -1,6 +1,7 @@
 import { GenderEnum, RoleEnum } from '../common/enum/enum';
 import { AbstractEntity } from '../common/entities/abstract.entity';
 import {
+  BeforeInsert,
   Column,
   Entity,
   JoinColumn,
@@ -24,10 +25,10 @@ export class User extends AbstractEntity {
   @Column()
   email: string;
 
-  @Column({ type: 'enum', enum: GenderEnum, nullable: false })
+  @Column({ type: 'enum', enum: GenderEnum, nullable: true })
   gender: GenderEnum;
 
-  @Column()
+  @Column({ nullable: true })
   address: string;
 
   @Column({ nullable: true })

@@ -8,9 +8,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './utils/constants';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UserService } from '../user/userService';
+import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from './googleStrategy';
 
 @Module({
   imports: [
+    PassportModule,
     TypeOrmModule.forFeature([ User]),
     JwtModule.register({
       global: true,
@@ -19,6 +22,6 @@ import { UserService } from '../user/userService';
     }),
   ],
   controllers: [AuthController, UserController],
-  providers: [AuthService, UserService, CloudinaryService],
+  providers: [AuthService, UserService, CloudinaryService, GoogleStrategy],
 })
 export class AuthModule {}

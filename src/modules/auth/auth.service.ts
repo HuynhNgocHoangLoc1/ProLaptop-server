@@ -1,9 +1,9 @@
+// auth.service.ts
 import { Repository } from 'typeorm';
-// import { CreateAuthDto } from './dto/create-auth.dto';
-// import { UpdateAuthDto } from './dto/update-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Profile } from 'passport-google-oauth20';
 import { UserService } from '../user/userService';
 import { User } from 'src/entities/user.entity';
 
@@ -15,6 +15,7 @@ export class AuthService {
     private readonly userService: UserService,
     private jwtService: JwtService,
   ) {}
+
   async signIn(userName: string, pass: string): Promise<any> {
     const user = await this.authRepository.findOne({ where: { userName } });
     if (user?.password !== pass) {
@@ -28,6 +29,23 @@ export class AuthService {
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
+  }
+
+  async validateUserFromGoogle(profile: Profile) {
+    const { emails, displayName } = profile;
+    const email = emails[0].value;
+    let user = await this.authRepository.findOne({ where: { email: email } });
+
+    if (!user) {
+      user = this.authRepository.create({
+        email,
+        userName: displayName,
+      });
+
+      user = await this.authRepository.save(user);
+    }
+
+    return user;
   }
 
   async validateUserFromToken(token: string): Promise<User> {
@@ -47,11 +65,10 @@ export class AuthService {
 
       return user;
     } catch (error) {
-      // Xử lý lỗi decode token
       if (error.name === 'JsonWebTokenError') {
         throw new UnauthorizedException('Invalid token');
       }
-      throw error; // Ném lại lỗi để NestJS xử lý
+      throw error; 
     }
   }
 }
