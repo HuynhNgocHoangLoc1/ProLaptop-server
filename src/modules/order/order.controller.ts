@@ -19,7 +19,7 @@ export class OrderController {
 
 
   @Get()
-  @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER]))
+  @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
   async findAll(@Query() params: GetOrderDto) {
     return this.orderService.findAll(params);
   }
