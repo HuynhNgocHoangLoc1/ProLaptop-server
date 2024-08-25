@@ -1,7 +1,12 @@
 import { Repository } from 'typeorm';
 import { Product } from 'src/entities/product.entity';
+import { Category } from 'src/entities/category.entity';
 
-export async function seedProducts(productsRepository: Repository<Product>) {
+export async function seedProducts(productsRepository: Repository<Product>, categoryRepository: Repository<Category>) {
+  const categories = await categoryRepository.find();
+  const macBookCategory = categories.find(category => category.name === 'MacBook');
+  const asusCategory = categories.find(category => category.name === 'Asus');
+
   const p1 = productsRepository.create({
     name: 'Macbook',
     description: 'The MacBook Pro M1 2019 is a powerful and sleek laptop.',
@@ -13,7 +18,9 @@ export async function seedProducts(productsRepository: Repository<Product>) {
     card: 'Apple M1',
     chip: 'Apple M1',
     hardDrive: '256GB',
+    categoryId: macBookCategory.id,
   });
+
   const p2 = productsRepository.create({
     name: 'ASUS ZenBook',
     description: 'The ASUS ZenBook 14 is a compact and versatile laptop.',
@@ -25,8 +32,8 @@ export async function seedProducts(productsRepository: Repository<Product>) {
     card: 'NVIDIA GeForce MX250',
     chip: 'Intel Core i7',
     hardDrive: '512GB SSD',
+    categoryId: asusCategory.id,
   });
-  // Add more products as needed...
-  
+
   await productsRepository.save([p1, p2]);
 }

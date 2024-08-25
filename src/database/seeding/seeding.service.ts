@@ -22,14 +22,25 @@ export class SeedingService {
       const categorysRepository = queryRunner.manager.getRepository(Category);
       const productsRepository = queryRunner.manager.getRepository(Product);
 
-      // Xóa dữ liệu hiện có
-      await usersRepository.clear();
-      await categorysRepository.clear();
-      await productsRepository.clear();
+       // Xóa dữ liệu hiện có
+       const users = await usersRepository.find();
+       await usersRepository.remove(users);
+       const categorys = await categorysRepository.find();
+       await categorysRepository.remove(categorys);
+      //  const orders = await ordersRepository.find();
+      //  await ordersRepository.remove(orders);
+       const products = await productsRepository.find();
+       await productsRepository.remove(products);
+      //  const reviews = await reviewsRepository.find();
+      //  await reviewsRepository.remove(reviews);
+      //  const orderDetails = await orderDetailRepository.find();
+      //  await orderDetailRepository.remove(orderDetails);
+      //  const shippingAddresses = await shippingAddressRepository.find();
+      //  await shippingAddressRepository.remove(shippingAddresses); 
 
       // Seed dữ liệu
       await seedCategories(categorysRepository);
-      await seedProducts(productsRepository);
+      await seedProducts(productsRepository, categorysRepository);
       await seedUsers(usersRepository);
 
       await queryRunner.commitTransaction();
