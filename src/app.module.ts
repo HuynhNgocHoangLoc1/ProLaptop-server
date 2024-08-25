@@ -12,6 +12,7 @@ import { CategoryModule } from './modules/category/category.module';
 import { ShippingAddressModule } from './modules/shipping-address/shipping-address.module';
 import { ProductModule } from './modules/product/product.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { SeedingModule } from './database/seeding/seeding.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuthModule } from './modules/auth/auth.module';
     ShippingAddressModule,
     ProductModule,
     AuthModule,
+    SeedingModule,
   ],
   controllers: [AppController],
   providers: [
