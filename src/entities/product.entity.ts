@@ -55,9 +55,16 @@ export class Product extends AbstractEntity{
     })
     review: Review[];
 
-    @ManyToOne(() => Category, (category) => category.product)
+    // @ManyToOne(() => Category, (category) => category.product)
+    // @JoinColumn({ name: 'categoryId', referencedColumnName: 'id' })
+    // category: Category;
+    @ManyToOne(() => Category, (category) => category.product, { 
+      onDelete: 'CASCADE',  // hoặc 'SET NULL' nếu bạn muốn đặt giá trị null khi xóa
+      onUpdate: 'CASCADE'   // hoặc 'SET NULL' nếu bạn muốn đặt giá trị null khi cập nhật
+    })
     @JoinColumn({ name: 'categoryId', referencedColumnName: 'id' })
     category: Category;
+    
 
     constructor(product: Partial<Product>) {
         super();
