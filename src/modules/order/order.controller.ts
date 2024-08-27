@@ -3,7 +3,7 @@ import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { GetOrderDto } from './dto/get-order.dto';
-import { AuthGuard } from '../auth/utils/auth.gruad';
+import { AuthGuard } from '../auth/utils/auth.guard';
 import { RolesGuard } from '../auth/utils/role.middleware';
 import { RoleEnum } from 'src/common/enum/enum';
 

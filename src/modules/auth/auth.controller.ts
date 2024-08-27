@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { GoogleAuthGuard } from './utils/google.gruad';
+import { GoogleAuthGuard } from './utils/google.guard';
 
 interface AuthenticatedUser {
   accessToken: string;

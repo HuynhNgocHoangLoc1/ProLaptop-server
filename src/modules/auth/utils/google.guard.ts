@@ -18,7 +18,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
     return activate as boolean;
   }
 
-  handleRequest(err, user, info, context) {
+  handleRequest(err, user) {
     if (err || !user) {
       throw err || new UnauthorizedException();
     }
