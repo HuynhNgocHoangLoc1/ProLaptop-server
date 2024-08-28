@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, Query, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -6,6 +6,7 @@ import { GetOrderDto } from './dto/get-order.dto';
 import { AuthGuard } from '../auth/utils/auth.guard';
 import { RolesGuard } from '../auth/utils/role.middleware';
 import { RoleEnum } from 'src/common/enum/enum';
+import { PaymentDto } from './dto/payment.dto';
 
 @Controller('order')
 export class OrderController {
@@ -42,5 +43,20 @@ export class OrderController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
   return this.orderService.remove(id);
+  }
+
+  @Post('/paymentMomo')
+  async makeMomoPayment(@Body() paymentDto: PaymentDto) {
+    try {
+      console.log('Received payment request:', paymentDto); // Log dữ liệu nhận được
+      const payUrl = await this.orderService.paymentMomo(paymentDto);
+      return { payUrl };
+    } catch (error) {
+      console.error('Error making payment:', error); // Log lỗi khi gặp lỗi
+      throw new HttpException(
+        'Failed to make payment',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
