@@ -12,7 +12,7 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
     description: 'The MacBook Pro M1 2019 is a powerful and sleek laptop.',
     price: 5000,
     stockQuantity: 10,
-    imageUrl: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    imageUrl: 'https://macone.vn/wp-content/uploads/2021/10/macbook-pro-spacegray-m1-2020.jpeg',
     ram: '8GB',
     cpu: 'Apple M1',
     card: 'Apple M1',
@@ -22,11 +22,11 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
   });
 
   const p2 = productsRepository.create({
-    name: 'ASUS ZenBook',
+    name: 'Msi',
     description: 'The ASUS ZenBook 14 is a compact and versatile laptop.',
     price: 1200,
     stockQuantity: 15,
-    imageUrl: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    imageUrl: 'https://tse3.mm.bing.net/th?id=OIP.T1oI2LwA1oB0dweSyhLbVAHaEt&pid=Api&P=0&h=180',
     ram: '16GB',
     cpu: 'Intel Core i7',
     card: 'NVIDIA GeForce MX250',
@@ -35,5 +35,19 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
     categoryId: asusCategory.id,
   });
 
-  await productsRepository.save([p1, p2]);
+  const p3 = productsRepository.create({
+    name: 'Asus',
+    description: 'The ASUS ZenBook 14 is a compact and versatile laptop.',
+    price: 1200,
+    stockQuantity: 15,
+    imageUrl: 'https://tse4.mm.bing.net/th?id=OIP.oxoxd5ungCm42DcxjbA1MgHaE7&pid=Api&P=0&h=180',
+    ram: '16GB',
+    cpu: 'Intel Core i7',
+    card: 'NVIDIA GeForce MX250',
+    chip: 'Intel Core i7',
+    hardDrive: '512GB SSD',
+    categoryId: asusCategory.id,
+  });
+
+  await productsRepository.save([p1, p2, p3]);
 }
