@@ -23,7 +23,17 @@ export async function seedUsers(usersRepository: Repository<User>) {
     avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
     role: RoleEnum.USER,
   });
+  const user3 = usersRepository.create({
+    userName: 'loc',
+    password: '123',
+    email: 'jane.smith@example.com',
+    gender: GenderEnum.FEMALE,
+    address: '456 Oak Avenue, Metropolis',
+    phone: '234-567-8901',
+    avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    role: RoleEnum.USER,
+  });
   // Add more users as needed...
   
-  await usersRepository.save([user1, user2]);
+  await usersRepository.save([user1, user2, user3]);
 }
