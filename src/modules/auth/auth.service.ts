@@ -28,6 +28,13 @@ export class AuthService {
     };
     return {
       access_token: await this.jwtService.signAsync(payload),
+      userName: user.userName,
+      email: user.email,
+      gender: user.gender,
+      address: user.address,
+      phone: user.phone,
+      avatar: user.avatar,
+      role: user.role,
     };
   }
 
