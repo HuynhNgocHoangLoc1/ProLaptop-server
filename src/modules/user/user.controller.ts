@@ -44,4 +44,10 @@ export class UserController {
   async remove(@Param('id') id: string) {
   return this.userService.remove(id);
   }
+
+
+  @Get(':id/carts')
+async getCartsByUserId(@Param('id') userId: string) {
+  return await this.userService.getUserCart(userId);
+}
 }

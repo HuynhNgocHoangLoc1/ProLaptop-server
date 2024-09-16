@@ -54,7 +54,11 @@ export class User extends AbstractEntity {
   })
   order: Orders[];
 
-
+  @OneToOne(() => Cart, (cart) => cart.user, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  cart: Cart;
 
   constructor(user: Partial<User>) {
     super();

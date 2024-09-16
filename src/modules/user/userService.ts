@@ -13,7 +13,7 @@ import { ResponsePaginate } from "src/common/dtos/responsePaginate";
 import { validate as uuidValidate } from 'uuid';
 import { ProductNotFoundException } from "src/common/exception/not-found";
 import { Orders } from "src/entities/order.entity";
-
+import {Cart} from 'src/entities/cart.entity'
 @Injectable()
 export class UserService {
   constructor(
@@ -130,5 +130,24 @@ export class UserService {
       console.error('Error uploading image to Cloudinary:', error);
       throw error;
     }
+  }
+
+  async getUserCart(userId: string) {
+    if (!uuidValidate(userId)) {
+      throw new BadRequestException('Invalid UUID');
+    }
+  
+    const userWithCart = await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.cart', 'cart')
+      .leftJoinAndSelect('cart.product', 'product') // lấy thông tin sản phẩm
+      .where('user.id = :userId', { userId })
+      .getOne();
+  
+    if (!userWithCart) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+  
+    return { cart: userWithCart.cart, message: 'Success' };
   }
 }
