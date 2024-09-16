@@ -7,9 +7,11 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Orders } from './order.entity';
+import { Cart } from './cart.entity';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -51,6 +53,8 @@ export class User extends AbstractEntity {
     onUpdate: 'CASCADE',
   })
   order: Orders[];
+
+
 
   constructor(user: Partial<User>) {
     super();

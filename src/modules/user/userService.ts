@@ -14,7 +14,6 @@ import { validate as uuidValidate } from 'uuid';
 import { ProductNotFoundException } from "src/common/exception/not-found";
 import { Orders } from "src/entities/order.entity";
 
-
 @Injectable()
 export class UserService {
   constructor(

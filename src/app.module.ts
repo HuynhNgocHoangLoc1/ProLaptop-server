@@ -13,6 +13,7 @@ import { ShippingAddressModule } from './modules/shipping-address/shipping-addre
 import { ProductModule } from './modules/product/product.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SeedingModule } from './database/seeding/seeding.module';
+import { CartModule } from './modules/cart/cart.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SeedingModule } from './database/seeding/seeding.module';
     ProductModule,
     AuthModule,
     SeedingModule,
+    CartModule
   ],
   controllers: [AppController],
   providers: [
