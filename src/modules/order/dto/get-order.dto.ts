@@ -1,4 +1,5 @@
 import { PageOptionsDto } from "src/common/dtos/pageOption";
+import { StatusDelivery } from "src/common/enum/enum";
 
 export class GetOrderDto extends PageOptionsDto {
  userId: string;
@@ -8,4 +9,5 @@ export class GetOrderDto extends PageOptionsDto {
  phoneNumber: string;
  shippingAddress: string;
  price: number;
+ statusDelivery: StatusDelivery;
 }

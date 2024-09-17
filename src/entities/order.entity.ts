@@ -4,6 +4,7 @@ import { User } from "./user.entity";
 import { ShippingAddress } from "./shipping-address.entity";
 import { Review } from "./review.entity";
 import { OrderDetail } from "./order-detail.entity";
+import {StatusDelivery } from "../common/enum/enum";
 
 @Entity()
 export class Orders extends AbstractEntity{
@@ -30,6 +31,9 @@ export class Orders extends AbstractEntity{
 
     @Column({ default: 0 }) 
     price: number;
+
+    @Column ({type: "enum", enum: StatusDelivery, nullable: true})
+    statusDelivery: StatusDelivery
 
     @ManyToOne(() => User, (user) => user.order)
     @JoinColumn({ name: 'userId', referencedColumnName: 'id' })

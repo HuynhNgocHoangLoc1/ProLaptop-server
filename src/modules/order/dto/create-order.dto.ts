@@ -1,4 +1,5 @@
 import { IsNotEmpty } from "class-validator";
+import { StatusDelivery } from "src/common/enum/enum";
 
 export class CreateOrderDto {
     @IsNotEmpty()
@@ -21,4 +22,7 @@ export class CreateOrderDto {
 
     @IsNotEmpty()
     price: number;
+
+    @IsNotEmpty()
+    statusDelivery: StatusDelivery;
 }
