@@ -9,9 +9,9 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Post()
-  async create(@Body() createCartDto: CreateCartDto) {
-    return this.cartService.create(createCartDto);
-  } 
+  async addToCart(@Body() createCartDto: CreateCartDto) {
+    return await this.cartService.create(createCartDto);
+  }
 
   @Get()
   async findAll(@Query() params: GetCartDto) {
@@ -35,5 +35,13 @@ export class CartController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
   return this.cartService.remove(id);
+  }
+
+  @Delete('decrease/:userId/:productId')
+  async decreaseProductQuantity(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+  ) {
+    return this.cartService.decreaseQuantity(userId, productId);
   }
 }
