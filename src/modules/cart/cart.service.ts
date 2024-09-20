@@ -147,16 +147,22 @@ export class CartService {
     if (!uuidValidate(id)) {
       throw new BadRequestException('Invalid UUID');
     }
+    
     const cart = await this.cartsRepository
       .createQueryBuilder('cart')
       .where('cart.id = :id', { id })
       .getOne();
-      if (!cart) {
-        throw new UserNotFoundException();
-      }
-    await this.cartsRepository.softDelete(id);
-    return { data: null, message: 'cart deletion successful' };
+      
+    if (!cart) {
+      throw new UserNotFoundException();
+    }
+    
+    // Thực hiện xóa cứng thay vì xóa mềm
+    await this.cartsRepository.delete(id);
+    
+    return { data: null, message: 'Cart deletion successful' };
   }
+  
 
   async decreaseQuantity(userId: string, productId: string) {
     // Kiểm tra xem sản phẩm có trong giỏ hàng hay không
