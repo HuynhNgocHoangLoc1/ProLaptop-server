@@ -143,24 +143,12 @@ export class CartService {
     }
   }
 
-  async remove(id: string) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Invalid UUID');
+  async remove(id: string): Promise<{ message: string }> {
+    const result = await this.cartsRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Cart with ID ${id} not found`);
     }
-    
-    const cart = await this.cartsRepository
-      .createQueryBuilder('cart')
-      .where('cart.id = :id', { id })
-      .getOne();
-      
-    if (!cart) {
-      throw new UserNotFoundException();
-    }
-    
-    // Thực hiện xóa cứng thay vì xóa mềm
-    await this.cartsRepository.delete(id);
-    
-    return { data: null, message: 'Cart deletion successful' };
+    return { message: `Successfully removed cart #${id}` };
   }
   
 
