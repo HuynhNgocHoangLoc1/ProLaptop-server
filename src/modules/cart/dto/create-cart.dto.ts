@@ -9,10 +9,4 @@ export class CreateCartDto {
 
     @IsNotEmpty()
     quantity: number;
-
-    @IsNotEmpty()
-    createdAt: Date;
-
-    @IsNotEmpty()
-    updatedAt: Date;
 }

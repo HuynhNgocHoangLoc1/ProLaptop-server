@@ -1,11 +1,13 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { AbstractEntity } from '../common/entities/abstract.entity';
 import { Product } from './product.entity';
@@ -25,10 +27,10 @@ export class Cart extends AbstractEntity {
   @Column()
   productId: string;
 
-  @Column()
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
-  @Column()
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
   updatedAt: Date;
 
   @OneToOne(() => Product, { nullable: true })

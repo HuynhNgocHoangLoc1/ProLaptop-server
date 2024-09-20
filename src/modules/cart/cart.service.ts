@@ -135,8 +135,7 @@ export class CartService {
       cart.userId = updateCartDto.userId;
       cart.productId = updateCartDto.productId;
       cart.quantity = updateCartDto.quantity;
-      cart.createdAt = updateCartDto.createdAt;
-      cart.updatedAt = updateCartDto.updatedAt;
+
       await this.entityManager.save(cart);
     } catch (error) {
       throw error;
