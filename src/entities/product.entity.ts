@@ -62,8 +62,8 @@ export class Product extends AbstractEntity {
     @JoinColumn({ name: 'categoryId', referencedColumnName: 'id' })
     category: Category;
 
-    @OneToMany(() => Cart, (cart) => cart.product)
-    cart: Cart[];
+    // @OneToMany(() => Cart, (cart) => cart.product)
+    // cart: Cart[];
 
     constructor(product: Partial<Product>) {
         super();

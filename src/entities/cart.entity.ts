@@ -31,13 +31,17 @@ export class Cart extends AbstractEntity {
   @Column()
   updatedAt: Date;
 
-  @OneToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  @OneToOne(() => Product, { nullable: true })
+  @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
+  product: Product;
+
+  @ManyToOne(() => User, (user) => user.cart, { nullable: false, onDelete: 'CASCADE' }) // Không cho phép giá trị null
+  @JoinColumn({ name: 'userId' }) // Cột productId liên kết với bảng Product
   user: User;
 
-  @ManyToOne(() => Product, (product) => product.cart, { nullable: false }) // Không cho phép giá trị null
-  @JoinColumn({ name: 'productId' }) // Cột productId liên kết với bảng Product
-  product: Product;
+  // @ManyToOne(() => Product, (product) => product.cart, { nullable: false }) // Không cho phép giá trị null
+  // @JoinColumn({ name: 'productId' }) // Cột productId liên kết với bảng Product
+  // product: Product;
 
   constructor(orderDetail: Partial<Cart>) {
     super();
