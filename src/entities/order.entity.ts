@@ -1,7 +1,6 @@
 import { AbstractEntity } from "../common/entities/abstract.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
-import { ShippingAddress } from "./shipping-address.entity";
 import { Review } from "./review.entity";
 import { OrderDetail } from "./order-detail.entity";
 import {StatusDelivery } from "../common/enum/enum";
@@ -38,10 +37,6 @@ export class Orders extends AbstractEntity{
     @ManyToOne(() => User, (user) => user.order)
     @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
     user: User;
-
-    @OneToOne(() => ShippingAddress, { nullable: true })
-  @JoinColumn({ name: 'shippingAddressId', referencedColumnName: 'id' })
-  address: ShippingAddress;
 
 
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order, {
