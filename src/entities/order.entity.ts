@@ -3,7 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGene
 import { User } from "./user.entity";
 import { Review } from "./review.entity";
 import { OrderDetail } from "./order-detail.entity";
-import {StatusDelivery } from "../common/enum/enum";
+import {PaymentMethod, StatusDelivery } from "../common/enum/enum";
 
 @Entity()
 export class Orders extends AbstractEntity{
@@ -30,6 +30,9 @@ export class Orders extends AbstractEntity{
 
     @Column({ default: 0 }) 
     price: number;
+    
+    @Column ({type: "enum", enum: PaymentMethod,nullable: true})
+    paymentMethod: PaymentMethod
 
     @Column ({type: "enum", enum: StatusDelivery, nullable: true})
     statusDelivery: StatusDelivery

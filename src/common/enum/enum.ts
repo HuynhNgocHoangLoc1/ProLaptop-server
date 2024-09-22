@@ -8,7 +8,7 @@ export enum StatusEnum {
   INACTIVE = 'inactive',
 }
 
-export enum StatusPay {
+export enum PaymentMethod {
   SUCCESS = 'success',
   PENDING = 'pending',
 }

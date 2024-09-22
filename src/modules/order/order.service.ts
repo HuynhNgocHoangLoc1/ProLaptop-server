@@ -82,6 +82,7 @@ export class OrderService {
       order.phoneNumber = updateOrderDto.phoneNumber;
       order.shippingAddress = updateOrderDto.shippingAddress;
       order.price = updateOrderDto.price;
+      order.paymentMethod =updateOrderDto.paymentMethod;
       order.statusDelivery = updateOrderDto.statusDelivery;
   
       await this.entityManager.save(order);
