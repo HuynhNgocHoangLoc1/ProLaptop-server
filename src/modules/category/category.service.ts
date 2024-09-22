@@ -68,6 +68,7 @@ export class CategoryService {
       }
       category.name = updateCategoryDto.name;
       category.description = updateCategoryDto.description;
+      category.iconUrl = updateCategoryDto.iconUrl;
   
       await this.entityManager.save(category);
     } catch (error) {
