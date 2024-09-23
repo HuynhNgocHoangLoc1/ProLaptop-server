@@ -121,91 +121,8 @@ export class OrderService {
     return { data: null, message: 'Order deletion successful' };
   }
 
-  // async paymentMomo(paymentDto: PaymentDto): Promise<string> {
-  //   return new Promise<string>((resolve, reject) => {
-  //     const { amount, redirectUrl } = paymentDto;
-  //     const partnerCode = 'MOMO';
-  //     const accessKey = 'F8BBA842ECF85';
-  //     const secretkey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
-  //     const requestId = 'AKUBA' + new Date().getTime();
-  //     const orderId = requestId;
-  //     const orderInfo = 'Thanh toán MoMo';
-  //     const ipnUrl = 'https://exactly-i7jp.onrender.com/checkout';
-  //     const requestType = 'captureWallet';
-  //     const extraData = '';
-  //     const rawSignature =
-  //       'accessKey=' +
-  //       accessKey +
-  //       '&amount=' +
-  //       amount +
-  //       '&extraData=' +
-  //       extraData +
-  //       '&ipnUrl=' +
-  //       ipnUrl +
-  //       '&orderId=' +
-  //       orderId +
-  //       '&orderInfo=' +
-  //       orderInfo +
-  //       '&partnerCode=' +
-  //       partnerCode +
-  //       '&redirectUrl=' +
-  //       redirectUrl +
-  //       '&requestId=' +
-  //       requestId +
-  //       '&requestType=' +
-  //       requestType;
 
-  //     const signature = crypto
-  //       .createHmac('sha256', secretkey)
-  //       .update(rawSignature)
-  //       .digest('hex');
 
-  //     const requestBody = JSON.stringify({
-  //       partnerCode: partnerCode,
-  //       accessKey: accessKey,
-  //       requestId: requestId,
-  //       amount: amount,
-  //       orderId: orderId,
-  //       orderInfo: orderInfo,
-  //       redirectUrl: redirectUrl,
-  //       ipnUrl: ipnUrl,
-  //       extraData: extraData,
-  //       requestType: requestType,
-  //       signature: signature,
-  //       lang: 'en',
-  //     });
-
-  //     const options = {
-  //       hostname: 'test-payment.momo.vn',
-  //       port: 443,
-  //       path: '/v2/gateway/api/create',
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Content-Length': Buffer.byteLength(requestBody),
-  //       },
-  //     };
-
-  //     const req = https.request(options, (res) => {
-  //       let payUrl = '';
-  //       res.setEncoding('utf8');
-  //       res.on('data', (body) => {
-  //         payUrl = JSON.parse(body).payUrl;
-  //       });
-  //       res.on('end', () => {
-  //         resolve(payUrl);
-  //       });
-  //     });
-
-  //     req.on('error', (e) => {
-  //       reject(`problem with request: ${e.message}`);
-  //     });
-
-  //     // Write data to request body
-  //     req.write(requestBody);
-  //     req.end();
-  //   });
-  // }
   // async paymentMomo(paymentDto: PaymentDto): Promise<string> {
   //   return new Promise<string>((resolve, reject) => {
   //     const { amount, redirectUrl } = paymentDto;
@@ -218,6 +135,9 @@ export class OrderService {
   //     const ipnUrl = 'https://your-ipn-url.com';
   //     const requestType = 'captureWallet';
   //     const extraData = '';
+
+  //     // Logging input data
+  //     // console.log('Sending request to MoMo with data:', { amount, redirectUrl });
 
   //     const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
 
@@ -241,6 +161,9 @@ export class OrderService {
   //       lang: 'en',
   //     });
 
+  //     // Logging request body
+  //     // console.log('Request body to MoMo:', requestBody);
+
   //     const options = {
   //       hostname: 'test-payment.momo.vn',
   //       port: 443,
@@ -258,12 +181,23 @@ export class OrderService {
   //         data += chunk;
   //       });
   //       res.on('end', () => {
-  //         const payUrl = JSON.parse(data).payUrl;
-  //         resolve(payUrl);
+  //         // Logging response data
+  //         // console.log('Response from MoMo:', data);
+  //         try {
+  //           const response = JSON.parse(data);
+  //           if (response && response.payUrl) {
+  //             resolve(response.payUrl);
+  //           } else {
+  //             reject('Invalid response from MoMo');
+  //           }
+  //         } catch (error) {
+  //           reject('Failed to parse response from MoMo');
+  //         }
   //       });
   //     });
 
   //     req.on('error', (e) => {
+  //       console.error('Request error:', e.message);
   //       reject(`problem with request: ${e.message}`);
   //     });
 
@@ -271,87 +205,62 @@ export class OrderService {
   //     req.end();
   //   });
   // }
-
-  async paymentMomo(paymentDto: PaymentDto): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      const { amount, redirectUrl } = paymentDto;
-      const partnerCode = 'MOMO';
-      const accessKey = 'F8BBA842ECF85';
-      const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
-      const requestId = 'AKUBA' + new Date().getTime();
-      const orderId = requestId;
-      const orderInfo = 'Thanh toán MoMo';
-      const ipnUrl = 'https://your-ipn-url.com';
-      const requestType = 'captureWallet';
-      const extraData = '';
-
-      // Logging input data
-      // console.log('Sending request to MoMo with data:', { amount, redirectUrl });
-
-      const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
-
-      const signature = crypto
-        .createHmac('sha256', secretKey)
-        .update(rawSignature)
-        .digest('hex');
-
-      const requestBody = JSON.stringify({
-        partnerCode,
-        accessKey,
-        requestId,
-        amount,
-        orderId,
-        orderInfo,
-        redirectUrl,
-        ipnUrl,
-        extraData,
-        requestType,
-        signature,
-        lang: 'en',
-      });
-
-      // Logging request body
-      // console.log('Request body to MoMo:', requestBody);
-
-      const options = {
-        hostname: 'test-payment.momo.vn',
-        port: 443,
-        path: '/v2/gateway/api/create',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(requestBody),
-        },
-      };
-
-      const req = https.request(options, (res) => {
-        let data = '';
-        res.on('data', (chunk) => {
-          data += chunk;
-        });
-        res.on('end', () => {
-          // Logging response data
-          // console.log('Response from MoMo:', data);
-          try {
-            const response = JSON.parse(data);
-            if (response && response.payUrl) {
-              resolve(response.payUrl);
-            } else {
-              reject('Invalid response from MoMo');
-            }
-          } catch (error) {
-            reject('Failed to parse response from MoMo');
-          }
-        });
-      });
-
-      req.on('error', (e) => {
-        console.error('Request error:', e.message);
-        reject(`problem with request: ${e.message}`);
-      });
-
-      req.write(requestBody);
-      req.end();
-    });
+  async paymentVnPay(paymentDto: PaymentDto): Promise<string> {
+    const { amount, redirectUrl } = paymentDto;
+  
+    // Các thông tin từ VNPay
+    const vnp_TmnCode = 'VNPAYTEST';
+    const vnp_HashSecret = 'your_secret_key'; // Thay bằng hash secret thực tế của bạn
+    const vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
+    const vnp_ReturnUrl = 'https://your-return-url.com'; // Thay bằng URL thực tế
+    const vnp_OrderInfo = 'Thanh toán đơn hàng VNPAY';
+    const vnp_OrderType = 'billpayment';
+    const vnp_Locale = 'vn'; // Ngôn ngữ (vn/en)
+    const vnp_CurrCode = 'VND';
+    
+    // Đây có thể lấy IP của user từ request, thay thế hard-code
+    const vnp_IpAddr = '127.0.0.1'; // Địa chỉ IP của người dùng (có thể lấy từ request)
+  
+    // Tạo request ID và mã đơn hàng duy nhất
+    const vnp_TxnRef = new Date().getTime().toString();
+  
+    // Tạo các tham số cho yêu cầu
+    const vnp_Params: any = {
+      vnp_Version: '2.1.0',
+      vnp_Command: 'pay',
+      vnp_TmnCode: vnp_TmnCode,
+      vnp_Amount: amount * 100, // VNPay yêu cầu amount theo đơn vị VND * 100
+      vnp_CreateDate: new Date().toISOString().slice(0, 19).replace(/-|T|:/g, ''),
+      vnp_CurrCode: vnp_CurrCode,
+      vnp_IpAddr: vnp_IpAddr,
+      vnp_Locale: vnp_Locale,
+      vnp_OrderInfo: vnp_OrderInfo,
+      vnp_OrderType: vnp_OrderType,
+      vnp_ReturnUrl: redirectUrl || vnp_ReturnUrl, // Ưu tiên sử dụng redirectUrl từ request nếu có
+      vnp_TxnRef: vnp_TxnRef,
+    };
+  
+    // Tạo chữ ký (signature) từ các tham số đã được sắp xếp theo thứ tự key
+    const sortedParams = Object.keys(vnp_Params).sort().reduce((acc, key) => {
+      acc[key] = vnp_Params[key];
+      return acc;
+    }, {});
+  
+    // Sử dụng URLSearchParams thay cho qs.stringify
+    const urlSearchParams = new URLSearchParams(sortedParams);
+  
+    // Tạo chữ ký bảo mật
+    const crypto = require('crypto');
+    const hmac = crypto.createHmac('sha512', vnp_HashSecret);
+    const signed = hmac.update(Buffer.from(urlSearchParams.toString(), 'utf-8')).digest('hex');
+    vnp_Params['vnp_SecureHash'] = signed;
+  
+    // Tạo lại URL với URLSearchParams
+    urlSearchParams.append('vnp_SecureHash', vnp_Params['vnp_SecureHash']);
+  
+    // Tạo URL thanh toán VNPay
+    const vnpUrl = `${vnp_Url}?${urlSearchParams.toString()}`;
+    return vnpUrl;
   }
 }
+

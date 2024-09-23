@@ -45,18 +45,33 @@ export class OrderController {
   return this.orderService.remove(id);
   }
 
-  @Post('/paymentMomo')
-  async makeMomoPayment(@Body() paymentDto: PaymentDto) {
+  // @Post('/paymentMomo')
+  // async makeMomoPayment(@Body() paymentDto: PaymentDto) {
+  //   try {
+  //     console.log('Received payment request:', paymentDto); // Log dữ liệu nhận được
+  //     const payUrl = await this.orderService.paymentMomo(paymentDto);
+  //     return { payUrl };
+  //   } catch (error) {
+  //     console.error('Error making payment:', error); // Log lỗi khi gặp lỗi
+  //     throw new HttpException(
+  //       'Failed to make payment',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
+  @Post('/paymentVnPay')
+  async makeVnPayPayment(@Body() paymentDto: PaymentDto) {
     try {
-      console.log('Received payment request:', paymentDto); // Log dữ liệu nhận được
-      const payUrl = await this.orderService.paymentMomo(paymentDto);
+      // console.log('Received VNPay payment request:', paymentDto); // Log dữ liệu nhận được
+      const payUrl = await this.orderService.paymentVnPay(paymentDto);
       return { payUrl };
     } catch (error) {
-      console.error('Error making payment:', error); // Log lỗi khi gặp lỗi
+      console.error('Error making VNPay payment:', error); // Log lỗi khi gặp lỗi
       throw new HttpException(
-        'Failed to make payment',
+        'Failed to make VNPay payment',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+  
 }
