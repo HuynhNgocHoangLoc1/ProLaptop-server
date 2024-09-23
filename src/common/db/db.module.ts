@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 
-// kết nối deploy data ở render
+// kết nối deploy data ở vercel
 @Module({
   imports: [
     ConfigModule.forRoot({
