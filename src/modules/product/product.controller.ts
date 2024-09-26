@@ -44,4 +44,9 @@ export class ProductController {
   async remove(@Param('id') id: string) {
   return this.productService.remove(id);
   }
+
+  @Get(':id/categoryId')
+  async getProductByCategoryId(@Param('id') id: string) {
+    return this.productService.getProductByCategoryId(id);
+  }
 }

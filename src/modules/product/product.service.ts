@@ -149,4 +149,11 @@ export class ProductService {
       throw error;
     }
   }
+
+  async getProductByCategoryId(categoryId: string): Promise<Product[]> {
+    // Giả sử trong entity Product có quan hệ với Category thông qua khóa ngoại categoryId
+    return await this.productsRepository.find({
+      where: { categoryId: categoryId },
+    });
+  }
 }
