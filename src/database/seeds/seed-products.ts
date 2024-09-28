@@ -54,7 +54,7 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
     description: 'The ASUS ZenBook 14 is a compact and versatile laptop.',
     price: 1200,
     stockQuantity: 15,
-    imageUrl: 'https://tse4.mm.bing.net/th?id=OIP.oxoxd5ungCm42DcxjbA1MgHaE7&pid=Api&P=0&h=180',
+    imageUrl: 'https://i5.walmartimages.com/asr/f6359217-3872-4187-abe4-3a6af2035bc5.f4ed5b8bf2745583fdf8e9849aa675a7.jpeg',
     ram: '16GB',
     cpu: 'Intel Core i7',
     card: 'NVIDIA GeForce MX250',
@@ -107,10 +107,10 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
 
   const p8 = productsRepository.create({
     name: 'Hp',
-    description: 'The ASUS ZenBook 14 is a compact and versatile laptop.',
+    description: 'The Hp ZenBook 14 is a compact and versatile laptop.',
     price: 1200,
     stockQuantity: 15,
-    imageUrl: 'https://tse4.mm.bing.net/th?id=OIP.oxoxd5ungCm42DcxjbA1MgHaE7&pid=Api&P=0&h=180',
+    imageUrl: 'https://i5.walmartimages.com/asr/f6359217-3872-4187-abe4-3a6af2035bc5.f4ed5b8bf2745583fdf8e9849aa675a7.jpeg',
     ram: '16GB',
     cpu: 'Intel Core i7',
     card: 'NVIDIA GeForce MX250',
