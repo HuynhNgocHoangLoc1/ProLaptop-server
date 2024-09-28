@@ -6,7 +6,8 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
   const categories = await categoryRepository.find();
   const macBookCategory = categories.find(category => category.name === 'MacBook');
   const asusCategory = categories.find(category => category.name === 'Asus');
-
+const hpCategory = categories.find(category => category.name === 'HP');
+const msiCategory = categories.find(category => category.name === 'Msi');
   const p1 = productsRepository.create({
     name: 'Macbook',
     description: 'The MacBook Pro M1 2019 is a powerful and sleek laptop.',
@@ -32,7 +33,7 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
     card: 'NVIDIA GeForce MX250',
     chip: 'Intel Core i7',
     hardDrive: '512GB SSD',
-    categoryId: asusCategory.id,
+    categoryId: msiCategory.id,
   });
 
   const p3 = productsRepository.create({
@@ -60,7 +61,7 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
     card: 'NVIDIA GeForce MX250',
     chip: 'Intel Core i7',
     hardDrive: '512GB SSD',
-    categoryId: asusCategory.id,
+    categoryId: hpCategory.id,
   });
 
   const p5 = productsRepository.create({
@@ -88,7 +89,7 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
     card: 'NVIDIA GeForce MX250',
     chip: 'Intel Core i7',
     hardDrive: '512GB SSD',
-    categoryId: asusCategory.id,
+    categoryId: msiCategory.id,
   });
 
   const p7 = productsRepository.create({
@@ -116,7 +117,7 @@ export async function seedProducts(productsRepository: Repository<Product>, cate
     card: 'NVIDIA GeForce MX250',
     chip: 'Intel Core i7',
     hardDrive: '512GB SSD',
-    categoryId: asusCategory.id,
+    categoryId: hpCategory.id,
   });
 
 
