@@ -14,8 +14,8 @@ export async function seedCategories(categoryRepository: Repository<Category>) {
 
   });
   const category3 = categoryRepository.create({
-    name: 'HP',
-    description: 'HP products',
+    name: 'Hp',
+    description: 'Hp products',
     iconUrl: 'https://res.cloudinary.com/dh6dvndzn/image/upload/v1727524919/ah4ez7dkbeprmmnedx2t.png',
 
   });
