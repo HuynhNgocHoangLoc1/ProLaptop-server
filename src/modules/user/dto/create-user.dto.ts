@@ -13,6 +13,6 @@ export class CreateUserDto {
     @IsNotEmpty()
     address: string;
     @IsNotEmpty()
-    phone: String;
+    phoneNumber: String;
   
 }

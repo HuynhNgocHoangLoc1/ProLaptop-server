@@ -80,7 +80,7 @@ export class UserService {
       user.email = updateUserDto.email; 
       user.gender = updateUserDto.gender;
       user.address = updateUserDto.address;
-      user.phone = updateUserDto.phone;
+      user.phoneNumber = updateUserDto.phoneNumber;
       user.role = updateUserDto.role;
       
       await this.entityManager.save(user);

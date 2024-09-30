@@ -33,7 +33,7 @@ export class AuthService {
       email: user.email,
       gender: user.gender,
       address: user.address,
-      phone: user.phone,
+      phone: user.phoneNumber,
       avatar: user.avatar,
       role: user.role,
     };

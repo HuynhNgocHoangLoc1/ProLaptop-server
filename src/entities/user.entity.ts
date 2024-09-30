@@ -34,7 +34,7 @@ export class User extends AbstractEntity {
   address: string;
 
   @Column({ nullable: true })
-  phone: String;
+  phoneNumber: String;
 
   @Column({ nullable: true })
   avatar: string =
@@ -47,18 +47,12 @@ export class User extends AbstractEntity {
     nullable: false,
   })
   role: RoleEnum;
- 
+
   @OneToMany(() => Orders, (order) => order.user, {
     cascade: true,
     onUpdate: 'CASCADE',
   })
   order: Orders[];
-
-  // @OneToOne(() => Cart, (cart) => cart.user, {
-  //   cascade: true,
-  //   onDelete: 'CASCADE',
-  // })
-  // cart: Cart;
 
   @OneToMany(() => Cart, (cart) => cart.user, {
     cascade: true,

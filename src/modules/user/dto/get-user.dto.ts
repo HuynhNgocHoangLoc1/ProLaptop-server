@@ -7,7 +7,7 @@ export class GetUserDto extends PageOptionsDto {
     email: string;
     gender: GenderEnum;
     address: string;
-    phone: string;
+    phoneNumber: string;
     avatar: string;
     role: RoleEnum;
 }
