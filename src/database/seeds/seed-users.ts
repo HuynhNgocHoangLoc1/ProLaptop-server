@@ -9,7 +9,7 @@ export async function seedUsers(usersRepository: Repository<User>) {
     email: 'john.doe@example.com',
     gender: GenderEnum.MALE,
     address: '123 Elm Street, Springfield',
-    phone: '123-456-7890',
+    phoneNumber: '123-456-7890',
     avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
     role: RoleEnum.USER,
   });
@@ -19,7 +19,7 @@ export async function seedUsers(usersRepository: Repository<User>) {
     email: 'jane.smith@example.com',
     gender: GenderEnum.FEMALE,
     address: '456 Oak Avenue, Metropolis',
-    phone: '234-567-8901',
+    phoneNumber: '234-567-8901',
     avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
     role: RoleEnum.USER,
   });
@@ -29,7 +29,7 @@ export async function seedUsers(usersRepository: Repository<User>) {
     email: 'jane.smith@example.com',
     gender: GenderEnum.FEMALE,
     address: '456 Oak Avenue, Metropolis',
-    phone: '234-567-8901',
+    phoneNumber: '234-567-8901',
     avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
     role: RoleEnum.USER,
   });

@@ -25,7 +25,6 @@ export class OrderDetail extends AbstractEntity {
 
   @Column({ default: 0 })
   price: number;
-
   @ManyToOne(() => Orders, (order) => order.orderDetail)
   @JoinColumn({ name: 'orderId', referencedColumnName: 'id' })
   order: Orders;

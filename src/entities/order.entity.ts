@@ -13,8 +13,8 @@ export class Orders extends AbstractEntity{
     @Column()
     userId: string;
 
-    @Column()
-    date: Date;
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    date: Date; 
 
     @Column()
     name: string;

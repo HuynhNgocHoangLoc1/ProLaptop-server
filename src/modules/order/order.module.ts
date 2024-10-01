@@ -7,9 +7,12 @@ import { Review } from 'src/entities/review.entity';
 import { OrderDetailService } from '../order-detail/order-detail.service';
 import { OrderDetail } from 'src/entities/order-detail.entity';
 import { ReviewService } from '../review/review.service';
+import { Product } from 'src/entities/product.entity';
+import { Cart } from 'src/entities/cart.entity';
+import { User } from 'src/entities/user.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Orders, Review]),
+    TypeOrmModule.forFeature([Orders, Review, Product, OrderDetail, Cart,User]),
   ],
   controllers: [OrderController],
   providers: [OrderService, ReviewService],

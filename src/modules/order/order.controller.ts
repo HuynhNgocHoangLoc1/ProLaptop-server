@@ -1,4 +1,17 @@
- import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, Query, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ValidationPipe,
+  Query,
+  UseGuards,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -12,12 +25,10 @@ import { PaymentDto } from './dto/payment.dto';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
- 
   @Post()
   async create(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);
   }
-
 
   @Get()
   @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
@@ -39,10 +50,9 @@ export class OrderController {
     return { result, message: 'Successfully update order' };
   }
 
-
   @Delete(':id')
   async remove(@Param('id') id: string) {
-  return this.orderService.remove(id);
+    return this.orderService.remove(id);
   }
 
   // @Post('/paymentMomo')
@@ -73,5 +83,12 @@ export class OrderController {
       );
     }
   }
-  
+
+  @Post('/create-from-cart/:userId')
+  @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
+  async createOrderFromCart(@Body() body: any, @Param('userId') userId: string
+) {
+    const newOrder = await this.orderService.createOrderFromCart(body, userId);
+    return { message: 'Order created successfully', order: newOrder };
+  }
 }
