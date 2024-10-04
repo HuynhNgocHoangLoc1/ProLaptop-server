@@ -23,6 +23,7 @@ import * as https from 'https';
 import { Cart } from 'src/entities/cart.entity';
 import { Product } from 'src/entities/product.entity';
 import { User } from 'src/entities/user.entity';
+import { JwtStrategy } from '../auth/utils/jwt.trategy';
 
 @Injectable()
 export class OrderService {
@@ -35,10 +36,6 @@ export class OrderService {
     private readonly orderDetailRepository: Repository<OrderDetail>,
     @InjectRepository(Cart)
     private readonly cartRepository: Repository<Cart>,
-    @InjectRepository(Product)
-    private readonly productRepository: Repository<Product>,
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
     private readonly entityManager: EntityManager,
 
 
@@ -198,8 +195,13 @@ export class OrderService {
     return vnpUrl;
   }
 
-  async createOrderFromCart(body: any, userId: string) {
-    console.log('Request body:', body);
+  async createOrderFromCart(request: any, body: any) {
+
+    const token = request.headers.authorization.split(' ')[1];
+
+    const userId = await JwtStrategy.getUserIdFromToken(token);
+
+    console.log(userId)
 
     // Lấy các mục giỏ hàng của user mà productId nằm trong danh sách selectedProductIds
     const cartItems = body.carts;
@@ -211,7 +213,7 @@ export class OrderService {
   
     // Tạo order mới với thông tin userId, date, name và email
     const newOrder = this.ordersRepository.create({
-      userId,
+      userId : userId,
       date: new Date(),
       name: body.name,
       email: body.email,
@@ -246,7 +248,4 @@ export class OrderService {
   
     return { message: 'Order created successfully', orderId: savedOrder.id };
   }
-  
-  
-  
 }

@@ -11,6 +11,7 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -84,11 +85,11 @@ export class OrderController {
     }
   }
 
-  @Post('/create-from-cart/:userId')
+  @Post('/create-from-cart/')
   @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
-  async createOrderFromCart(@Body() body: any, @Param('userId') userId: string
+  async createOrderFromCart(@Req() request: any, @Body() body: any
 ) {
-    const newOrder = await this.orderService.createOrderFromCart(body, userId);
+    const newOrder = await this.orderService.createOrderFromCart(request, body);
     return { message: 'Order created successfully', order: newOrder };
   }
 }
