@@ -31,7 +31,7 @@ export class Orders extends AbstractEntity{
     @Column({ default: 0 }) 
     price: number;
     
-    @Column ({type: "enum", enum: PaymentMethod,nullable: true, default : PaymentMethod.PENDING})
+    @Column ({type: "enum", enum: PaymentMethod,nullable: true, default : PaymentMethod.CASHONDELIVERY})
     paymentMethod: PaymentMethod
 
     @Column ({type: "enum", enum: StatusDelivery, nullable: true})
