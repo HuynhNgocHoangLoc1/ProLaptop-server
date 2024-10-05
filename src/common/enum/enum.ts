@@ -9,8 +9,8 @@ export enum StatusEnum {
 }
 
 export enum PaymentMethod {
-  CASHONDELIVERY = 'Cash on Delivery',
-  VNPAY = 'VNPAY',
+  CASH_ON_DELIVERY = 'Cash on Delivery',
+  VNPAY = 'vnpay',
 }
 
 export enum StatusDelivery {
