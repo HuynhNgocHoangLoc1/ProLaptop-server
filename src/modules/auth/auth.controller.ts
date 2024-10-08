@@ -25,28 +25,27 @@ export class AuthController {
   signIn(@Body() signInDto: Record<string, any>) {
     return this.authService.signIn(signInDto.userName, signInDto.password);
   }
-
   @Get('google/login')
   @UseGuards(GoogleAuthGuard)
   handleGoogleLogin() {
     return { msg: 'Google Authentication' };
   }
-
+  
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async handleGoogleRedirect(@Req() req: Request & { user: AuthenticatedUser }, @Res() res: Response) {
     try {
       const user = req.user;
       const { accessToken, redirectURL } = user;
-
+  
       if (!redirectURL) {
         throw new Error("Redirect URL is undefined");
       }
-
+  
       res.redirect(redirectURL);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal server error' });
+      console.error('Error during Google redirect:', error);
+      res.status(500).json({ message: 'Internal server error', error: error.message }); // Trả về thông báo lỗi cụ thể
     }
   }
 }

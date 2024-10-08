@@ -12,6 +12,7 @@ import {
   HttpException,
   HttpStatus,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -21,6 +22,8 @@ import { AuthGuard } from '../auth/utils/auth.guard';
 import { RolesGuard } from '../auth/utils/role.middleware';
 import { RoleEnum } from 'src/common/enum/enum';
 import { PaymentDto } from './dto/payment.dto';
+import { request } from 'http';
+import { JwtStrategy } from '../auth/utils/jwt.trategy';
 
 @Controller('order')
 export class OrderController {
@@ -87,9 +90,16 @@ export class OrderController {
 
   @Post('/create-from-cart/')
   @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
-  async createOrderFromCart(@Req() request: any, @Body() body: any
-) {
+  async createOrderFromCart(@Req() request: any, @Body() body: any) {
     const newOrder = await this.orderService.createOrderFromCart(request, body);
     return { message: 'Order created successfully', order: newOrder };
   }
+
+  // @Get('/get-list-order-by-user')
+  // @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
+  // async getListOrderByUser(@Req() request: any) {
+  //   // console.log(request);
+  //   const listOrder = await this.orderService.getListOrderByUser(request);
+  //   return { message: 'Order fetched successfully', order: listOrder };
+  // }  
 }

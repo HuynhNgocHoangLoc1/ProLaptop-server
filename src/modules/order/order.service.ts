@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -69,11 +70,12 @@ export class OrderService {
   async findOneById(id: string) {
     const order = await this.ordersRepository
       .createQueryBuilder('order')
-      .select(['order'])
+      .leftJoinAndSelect('order.orderDetail', 'orderDetail')
       .where('order.id = :id', { id })
       .getOne();
     return order;
   }
+  
 
   async update(id: string, updateOrderDto: UpdateOrderDto) {
     if (!uuidValidate(id)) {
@@ -231,8 +233,8 @@ export class OrderService {
       const orderDetail = this.orderDetailRepository.create({
         orderId: savedOrder.id,
         productId: cartItem.productId,
-        quantity: cartItem.quantity,
-        price: cartItem.price, // Gán giá trị price từ cartItem
+        quantity: cartItem.quantity, 
+        price: cartItem.price, 
       });
   
       // Lưu OrderDetail vào database
@@ -242,10 +244,35 @@ export class OrderService {
     await Promise.all(orderDetailsPromises);
   
     // Xóa các mục CartItem đã tạo order khỏi giỏ hàng
-    cartItems.map(async (cartItem : any) => {
-      await this.cartRepository.delete(cartItem.id);
+    cartItems.map(async (cartItem: any) => {
+      console.log("CartItem ID:", cartItem.id); // Kiểm tra ID
+      if (cartItem.id) {
+        await this.cartRepository.delete(cartItem.id);
+      } else {
+        console.log("Cart item has no ID:", cartItem);
+      }
     });
+    
   
     return { message: 'Order created successfully', orderId: savedOrder.id };
   }
+
+//   async getListOrderByUser(request: any) {
+//     const token = request.headers.authorization.split(' ')[1];
+// console.log('Token:', token);
+// const userId = await JwtStrategy.getUserIdFromToken(token);
+// console.log('User ID from token:', userId);
+
+//     if (!userId) {
+//       throw new UnauthorizedException('Invalid or expired token');
+//     }
+  
+//     return await this.ordersRepository.find({
+//       where: {
+//         userId: userId, 
+//       },
+//       relations: ['orders'], 
+//     });
+//   }
+  
 }

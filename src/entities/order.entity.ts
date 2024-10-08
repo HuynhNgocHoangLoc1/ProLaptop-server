@@ -1,46 +1,58 @@
-import { AbstractEntity } from "../common/entities/abstract.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "./user.entity";
-import { Review } from "./review.entity";
-import { OrderDetail } from "./order-detail.entity";
-import {PaymentMethod, StatusDelivery } from "../common/enum/enum";
+import { AbstractEntity } from '../common/entities/abstract.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from './user.entity';
+import { Review } from './review.entity';
+import { OrderDetail } from './order-detail.entity';
+import { PaymentMethod, StatusDelivery } from '../common/enum/enum';
 
 @Entity()
-export class Orders extends AbstractEntity{
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class Orders extends AbstractEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @Column()
-    userId: string;
+  @Column()
+  userId: string;
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    date: Date; 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  date: Date;
 
-    @Column()
-    name: string;
+  @Column()
+  name: string;
 
-    @Column()
-    email: string;
+  @Column()
+  email: string;
 
-    @Column()
-    phoneNumber: string;
+  @Column()
+  phoneNumber: string;
 
-    @Column()
-    shippingAddress: string;
+  @Column()
+  shippingAddress: string;
 
-    @Column({ default: 0 }) 
-    price: number;
-    
-    @Column ({type: "enum", enum: PaymentMethod,nullable: true, default : PaymentMethod.CASH_ON_DELIVERY})
-    paymentMethod: PaymentMethod
+  @Column({ default: 0 })
+  price: number;
 
-    @Column ({type: "enum", enum: StatusDelivery, nullable: true})
-    statusDelivery: StatusDelivery
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+    nullable: true,
+    default: PaymentMethod.CASH_ON_DELIVERY,
+  })
+  paymentMethod: PaymentMethod;
 
-    @ManyToOne(() => User, (user) => user.order)
-    @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
-    user: User;
+  @Column({ type: 'enum', enum: StatusDelivery, nullable: true })
+  statusDelivery: StatusDelivery;
 
+  @ManyToOne(() => User, (user) => user.order)
+  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  user: User;
 
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order, {
     cascade: true,
@@ -48,8 +60,8 @@ export class Orders extends AbstractEntity{
   })
   orderDetail: OrderDetail[];
 
-    constructor(order: Partial<Orders>) {
-        super();
-        Object.assign(this, order);
-      }
-    }
+  constructor(order: Partial<Orders>) {
+    super();
+    Object.assign(this, order);
+  }
+}
