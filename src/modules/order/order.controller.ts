@@ -95,11 +95,11 @@ export class OrderController {
     return { message: 'Order created successfully', order: newOrder };
   }
 
-  // @Get('/get-list-order-by-user')
-  // @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
-  // async getListOrderByUser(@Req() request: any) {
-  //   // console.log(request);
-  //   const listOrder = await this.orderService.getListOrderByUser(request);
-  //   return { message: 'Order fetched successfully', order: listOrder };
-  // }  
+  @Get('/get-list-order-by-user/:userId')
+  @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
+  async getListOrderByUser(@Req() request: any) {
+    console.log(request);
+    const listOrder = await this.orderService.getListOrderByUser(request);
+    return { message: 'Order fetched successfully',order: listOrder };
+  }  
 }

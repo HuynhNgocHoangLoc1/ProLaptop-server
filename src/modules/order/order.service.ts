@@ -257,22 +257,23 @@ export class OrderService {
     return { message: 'Order created successfully', orderId: savedOrder.id };
   }
 
-//   async getListOrderByUser(request: any) {
-//     const token = request.headers.authorization.split(' ')[1];
-// console.log('Token:', token);
-// const userId = await JwtStrategy.getUserIdFromToken(token);
-// console.log('User ID from token:', userId);
+  async getListOrderByUser(request: any) {
+    // console.log("hello");
+    const token = request.headers.authorization.split(' ')[1];
+  console.log('Token:', token);
+  const userId = await JwtStrategy.getUserIdFromToken(token);
+  console.log('User ID from token:', userId);
 
-//     if (!userId) {
-//       throw new UnauthorizedException('Invalid or expired token');
-//     }
+    if (!userId) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
   
-//     return await this.ordersRepository.find({
-//       where: {
-//         userId: userId, 
-//       },
-//       relations: ['orders'], 
-//     });
-//   }
+    return await this.ordersRepository.find({
+      where: {
+        userId: userId, 
+      },
+      relations: ['orderDetail'], 
+    });
+  }
   
 }
