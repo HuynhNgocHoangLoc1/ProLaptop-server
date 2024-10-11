@@ -17,6 +17,7 @@ export enum StatusDelivery {
   SUCCESS = 'success',
   PENDING = 'pending',
   DELIVERING = 'delivering',
+  CANCELLED = 'cancelled',
 }
 
 export enum RoleEnum {

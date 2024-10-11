@@ -245,7 +245,7 @@ export class OrderService {
   
     // Xóa các mục CartItem đã tạo order khỏi giỏ hàng
     cartItems.map(async (cartItem: any) => {
-      console.log("CartItem ID:", cartItem.id); // Kiểm tra ID
+      // console.log("CartItem ID:", cartItem.id); // Kiểm tra ID
       if (cartItem.id) {
         await this.cartRepository.delete(cartItem.id);
       } else {
@@ -258,22 +258,29 @@ export class OrderService {
   }
 
   async getListOrderByUser(request: any) {
-    // console.log("hello");
     const token = request.headers.authorization.split(' ')[1];
-  console.log('Token:', token);
-  const userId = await JwtStrategy.getUserIdFromToken(token);
-  console.log('User ID from token:', userId);
-
+    // console.log(token)
+    const userId = await JwtStrategy.getUserIdFromToken(token);
+    // console.log(userId)
     if (!userId) {
       throw new UnauthorizedException('Invalid or expired token');
     }
   
+    // Lấy giá trị `status` từ query parameters
+    const { status } = request.query;
+  
+    // Khai báo điều kiện lọc là kiểu `any` để linh hoạt
+    let filterCondition: any = { userId: userId };
+  
+    // Nếu `status` không phải là 'product', thêm điều kiện lọc theo `statusDelivery`
+    if (status) {
+      filterCondition.statusDelivery = status;
+    }
+  
+    // Trả về danh sách đơn hàng dựa trên điều kiện lọc
     return await this.ordersRepository.find({
-      where: {
-        userId: userId, 
-      },
-      relations: ['orderDetail'], 
+      where: filterCondition,
+      relations: ['orderDetail'], // Bao gồm thông tin chi tiết đơn hàng
     });
   }
-  
 }

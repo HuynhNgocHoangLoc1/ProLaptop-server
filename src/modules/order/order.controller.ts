@@ -24,6 +24,7 @@ import { RoleEnum } from 'src/common/enum/enum';
 import { PaymentDto } from './dto/payment.dto';
 import { request } from 'http';
 import { JwtStrategy } from '../auth/utils/jwt.trategy';
+import { CurrentUser } from 'src/common/decorator/currentUser.decorator';
 
 @Controller('order')
 export class OrderController {
@@ -34,18 +35,12 @@ export class OrderController {
     return this.orderService.create(createOrderDto);
   }
 
-  @Get()
-  @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
-  async findAll(@Query() params: GetOrderDto) {
-    return this.orderService.findAll(params);
-  }
-
-  @Get(':id')
+  @Get('/:id')
   async findOneById(@Param('id') id: string) {
     return this.orderService.findOneById(id);
   }
 
-  @Patch(':id')
+  @Patch('/:id')
   async update(
     @Param('id') id: string,
     @Body(new ValidationPipe()) updateOrderDto: UpdateOrderDto,
@@ -54,7 +49,7 @@ export class OrderController {
     return { result, message: 'Successfully update order' };
   }
 
-  @Delete(':id')
+  @Delete('/:id')
   async remove(@Param('id') id: string) {
     return this.orderService.remove(id);
   }
@@ -95,10 +90,10 @@ export class OrderController {
     return { message: 'Order created successfully', order: newOrder };
   }
 
-  @Get('/get-list-order-by-user/:userId')
+  @Get()
   @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
-  async getListOrderByUser(@Req() request: any) {
-    console.log(request);
+  async getListOrderByUser(@CurrentUser() user: any, @Req() request: any) {
+    console.log(user);
     const listOrder = await this.orderService.getListOrderByUser(request);
     return { message: 'Order fetched successfully',order: listOrder };
   }  
