@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 import { GenderEnum, RoleEnum } from "src/common/enum/enum";
 
 export class CreateUserDto {
@@ -12,7 +12,8 @@ export class CreateUserDto {
     gender: GenderEnum;
     @IsNotEmpty()
     address: string;
+    @IsOptional() // Để avatar là optional thay vì bắt buộc
+    avatar?: string;
     @IsNotEmpty()
-    phoneNumber: String;
-  
+    phoneNumber: String; 
 }

@@ -14,7 +14,7 @@ import { ProductNotFoundException, UserNotFoundException } from 'src/common/exce
 import { validate as uuidValidate } from 'uuid';
 import { OrderDetail } from 'src/entities/order-detail.entity';
 import { Review } from 'src/entities/review.entity';
-
+import { Category } from 'src/entities/category.entity';
 
 @Injectable()
 export class ProductService {
@@ -24,19 +24,29 @@ export class ProductService {
     private readonly entityManager: EntityManager,
     private readonly cloudinaryService: CloudinaryService,
   ) { }
-  async create(
+  async checkCategoryExists(categoryId: string): Promise<boolean> {
+    const count = await this.entityManager.count(Category, { where: { id: categoryId } });
+    return count > 0;
+}
+
+async create(
     createProductDto: CreateProductDto,
-    imageUrl?: Multer.File,
-  ) {
+    imageUrl?: Express.Multer.File,
+) {
+    const categoryExists = await this.checkCategoryExists(createProductDto.categoryId);
+    if (!categoryExists) {
+        throw new BadRequestException('Category does not exist');
+    }
+
     const product = new Product(createProductDto);
 
     if (imageUrl) {
-      const imageUrlPicture = await this.uploadAndReturnUrl(imageUrl);
-      product.imageUrl = imageUrlPicture;
+        const imageUrlPicture = await this.uploadAndReturnUrl(imageUrl);
+        product.imageUrl = imageUrlPicture;
     }
     await this.entityManager.save(product);
     return { product, message: 'Successfully create product' };
-  }
+}
 
   async findAll(params: GetProductDto) {
     const product = this.productsRepository
@@ -67,13 +77,13 @@ export class ProductService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto, imageUrl?: Multer.File) {
+  async update(id: string, updateProductDto: UpdateProductDto, imageUrl?: Express.Multer.File) {
     try {
       const product = await this.productsRepository.findOneBy({ id });
       if (!uuidValidate(id)) {
         throw new BadRequestException('Invalid UUID');
       }
-      console.log('image', imageUrl);
+      // console.log('image', imageUrl);
       if (imageUrl) {
         await this.deleteOldImageUrl(product);
         product.imageUrl = await this.uploadAndReturnUrl(imageUrl);
@@ -140,7 +150,7 @@ export class ProductService {
     }
   }
 
-  async uploadAndReturnUrl(file: Multer.File): Promise<string> {
+  async uploadAndReturnUrl(file: Express.Multer.File): Promise<string> {
     try {
       const result = await this.cloudinaryService.uploadImageFile(file);
       return result.secure_url;

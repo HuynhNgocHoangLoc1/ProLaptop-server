@@ -15,7 +15,7 @@ export class ProductController {
   @UseInterceptors(FileInterceptor('imageUrl'))
   async create(
     @Body() createProductDto: CreateProductDto,
-    @UploadedFile() imageUrl?: Multer.File,
+    @UploadedFile() imageUrl?: Express.Multer.File,
   ) {
     return this.productService.create(createProductDto, imageUrl);
   }
@@ -35,8 +35,9 @@ export class ProductController {
   async update(
     @Param('id') id: string,
     @Body(new ValidationPipe()) updateProductDto: UpdateProductDto,
+    @UploadedFile() imageUrl: Express.Multer.File,
   ) {
-    const result = await this.productService.update(id, updateProductDto);
+    const result = await this.productService.update(id, updateProductDto, imageUrl);
     return { result, message: 'Successfully update product' };
   }
 

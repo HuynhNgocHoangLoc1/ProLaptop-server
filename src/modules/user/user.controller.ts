@@ -1,11 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, ValidationPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ValidationPipe, Query } from '@nestjs/common';
 import { UserService } from './userService';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Multer } from 'multer';
 import { GetUserDto } from './dto/get-user.dto';
-
 
 @Controller('user')
 export class UserController {
@@ -15,7 +13,7 @@ export class UserController {
   @UseInterceptors(FileInterceptor('avatar'))
   async create(
     @Body() createUserDto: CreateUserDto,
-    @UploadedFile() avatar?: Multer.File,
+    @UploadedFile() avatar?: Express.Multer.File, // Thay đổi từ Multer.File sang Express.Multer.File
   ) {
     return this.userService.create(createUserDto, avatar);
   }
@@ -35,19 +33,19 @@ export class UserController {
   async update(
     @Param('id') id: string,
     @Body(new ValidationPipe()) updateUserDto: UpdateUserDto,
+    @UploadedFile() avatar: Express.Multer.File, // Thay đổi từ Multer.File sang Express.Multer.File
   ) {
-    const result = await this.userService.update(id, updateUserDto);
+    const result = await this.userService.update(id, updateUserDto, avatar);
     return { result, message: 'Successfully update user' };
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-  return this.userService.remove(id);
+    return this.userService.remove(id);
   }
 
-
   @Get(':id/carts')
-async getCartsByUserId(@Param('id') userId: string) {
-  return await this.userService.getUserCart(userId);
-}
+  async getCartsByUserId(@Param('id') userId: string) {
+    return await this.userService.getUserCart(userId);
+  }
 }

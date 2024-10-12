@@ -36,9 +36,11 @@ export class User extends AbstractEntity {
   @Column({ nullable: true })
   phoneNumber: String;
 
-  @Column({ nullable: true })
-  avatar: string =
-    'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png';
+  @Column({
+    default: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    nullable: true
+  })
+  avatar: string;
 
   @Column({
     type: 'enum',
