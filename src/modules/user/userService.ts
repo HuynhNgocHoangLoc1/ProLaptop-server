@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Multer } from 'multer';
 import { User } from "../../entities/user.entity";
@@ -65,26 +65,72 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, avatar?: Multer.File) {
-    try {
-      const user = await this.usersRepository.findOneBy({ id });
-      if (!uuidValidate(id)) {
+    // Kiểm tra UUID trước
+    if (!uuidValidate(id)) {
         throw new BadRequestException('Invalid UUID');
-      }
-      console.log('avatar', avatar);
-      if (avatar) {
-        await this.deleteOldAvatar(user);
-        user.avatar = await this.uploadAndReturnUrl(avatar);
-      }
-      user.userName = updateUserDto.userName;
-      user.password = updateUserDto.password;
-      user.email = updateUserDto.email; 
-      user.gender = updateUserDto.gender;
-      user.address = updateUserDto.address;
-      user.phoneNumber = updateUserDto.phoneNumber;
-      user.role = updateUserDto.role;
-      
-      await this.entityManager.save(user);
+    }
+
+    let user;
+    try {
+        user = await this.usersRepository.findOneBy({ id });
+
+        // Kiểm tra xem user có tồn tại không
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        console.log('avatar', avatar);
+
+        if (avatar) {
+            await this.deleteOldAvatar(user);
+            user.avatar = await this.uploadAndReturnUrl(avatar);
+        }
+
+        // Cập nhật các thuộc tính khác của người dùng
+        user.userName = updateUserDto.userName;
+        user.password = updateUserDto.password;
+        user.email = updateUserDto.email; 
+        user.gender = updateUserDto.gender;
+        user.address = updateUserDto.address;
+        user.phoneNumber = updateUserDto.phoneNumber;
+        user.role = updateUserDto.role;
+
+        // Lưu người dùng
+        await this.entityManager.save(user);
     } catch (error) {
+        console.error('Error updating user:', error);
+        throw new InternalServerErrorException('Failed to update user');
+    }
+
+    // Kiểm tra avatar
+    if (!user.avatar) {
+        throw new InternalServerErrorException('Avatar not found after upload');
+    }
+
+    // Trả về thông tin người dùng cùng với URL của avatar
+    return { 
+        user, 
+        message: 'User update successful', 
+        avatarUrl: user.avatar 
+    };
+}
+
+  //Cloudinary
+  async deleteOldAvatar(user: User): Promise<void> {
+    if (user.avatar) {
+      const publicId = this.cloudinaryService.extractPublicIdFromUrl(
+        user.avatar
+      );
+      await this.cloudinaryService.deleteFile(publicId);
+    }
+  }
+
+  async uploadAndReturnUrl(file: Multer.File): Promise<string> {
+    try {
+      const result = await this.cloudinaryService.uploadImageFile(file);
+      return result.secure_url;
+    } catch (error) {
+      console.error('Error uploading image to Cloudinary:', error);
       throw error;
     }
   }
@@ -110,26 +156,6 @@ export class UserService {
       }
     await this.usersRepository.softDelete(id);
     return { data: null, message: 'user deletion successful' };
-  }
- 
-  //Cloudinary
-  async deleteOldAvatar(user: User): Promise<void> {
-    if (user.avatar) {
-      const publicId = this.cloudinaryService.extractPublicIdFromUrl(
-        user.avatar
-      );
-      await this.cloudinaryService.deleteFile(publicId);
-    }
-  }
-
-  async uploadAndReturnUrl(file: Multer.File): Promise<string> {
-    try {
-      const result = await this.cloudinaryService.uploadImageFile(file);
-      return result.secure_url;
-    } catch (error) {
-      console.error('Error uploading image to Cloudinary:', error);
-      throw error;
-    }
   }
 
   async getUserCart(userId: string) {
