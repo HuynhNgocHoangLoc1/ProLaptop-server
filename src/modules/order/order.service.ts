@@ -11,7 +11,7 @@ import { EntityManager, In, Repository } from 'typeorm';
 import { CloudinaryService } from 'src/modules/cloudinary/cloudinary.service';
 import { GetOrderDto } from './dto/get-order.dto';
 import { Orders } from 'src/entities/order.entity';
-import { Order, StatusDelivery } from '../../common/enum/enum';
+import { Order, PaymentMethod, StatusDelivery } from '../../common/enum/enum';
 import { PageMetaDto } from 'src/common/dtos/pageMeta';
 import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
 import { UserNotFoundException } from 'src/common/exception/not-found';
@@ -221,11 +221,12 @@ export class OrderService {
       email: body.email,
       phoneNumber: body.phoneNumber,  
       shippingAddress: body.shippingAddress,
-      paymentMethod: body.paymentMethod,
+      // paymentMethod: body.paymentMethod,
+      paymentMethod: PaymentMethod.CASH_ON_DELIVERY,
       statusDelivery: StatusDelivery.PENDING,
       price: body.totalPrice,
     });
-  
+
     const savedOrder = await this.ordersRepository.save(newOrder);
   
     // Lưu orderId và productId vào từng OrderDetail, sử dụng Promise.all để chạy song song
@@ -236,7 +237,6 @@ export class OrderService {
         quantity: cartItem.quantity, 
         price: cartItem.price, 
       });
-  
       // Lưu OrderDetail vào database
       return this.orderDetailRepository.save(orderDetail);
     });
@@ -254,7 +254,7 @@ export class OrderService {
     });
     
   
-    return { message: 'Order created successfully', orderId: savedOrder.id };
+    return { message: 'Order created successfully', order: savedOrder };
   }
 
   async getListOrderByUser(request: any) {
@@ -280,7 +280,7 @@ export class OrderService {
     // Trả về danh sách đơn hàng dựa trên điều kiện lọc
     return await this.ordersRepository.find({
       where: filterCondition,
-      relations: ['orderDetail'], // Bao gồm thông tin chi tiết đơn hàng
+      relations: ['orderDetail', 'orderDetail.product'], // Bao gồm thông tin chi tiết đơn hàng
     });
   }
 }
