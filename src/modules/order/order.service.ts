@@ -197,11 +197,7 @@ export class OrderService {
     return vnpUrl;
   }
 
-  async createOrderFromCart(request: any, body: any) {
-
-    const token = request.headers.authorization.split(' ')[1];
-
-    const userId = await JwtStrategy.getUserIdFromToken(token);
+  async createOrderFromCart(userId: any, body: any) {
 
     console.log(userId)
 

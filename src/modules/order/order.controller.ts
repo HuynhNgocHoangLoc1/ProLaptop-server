@@ -86,7 +86,9 @@ export class OrderController {
   @Post('/create-from-cart/')
   @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
   async createOrderFromCart(@Req() request: any, @Body() body: any) {
-    const newOrder = await this.orderService.createOrderFromCart(request, body);
+    const token = request.headers.authorization.split(' ')[1];
+    const userId = await JwtStrategy.getUserIdFromToken(token);
+    const newOrder = await this.orderService.createOrderFromCart(userId, body);
     return { message: 'Order created successfully', order: newOrder };
   }
 
