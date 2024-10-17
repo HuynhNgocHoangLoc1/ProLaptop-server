@@ -13,6 +13,7 @@ import { ProductModule } from './modules/product/product.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SeedingModule } from './database/seeding/seeding.module';
 import { CartModule } from './modules/cart/cart.module';
+import { PaymentModule } from './modules/zalo-payment/payment.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { CartModule } from './modules/cart/cart.module';
     ProductModule,
     AuthModule,
     SeedingModule,
-    CartModule
+    CartModule,
+    PaymentModule
   ],
   controllers: [AppController],
   providers: [

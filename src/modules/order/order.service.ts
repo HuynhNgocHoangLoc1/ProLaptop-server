@@ -197,13 +197,9 @@ export class OrderService {
     return vnpUrl;
   }
 
-  async createOrderFromCart(request: any, body: any) {
+  async createOrderFromCart(userId: any, body: any) {
 
-    const token = request.headers.authorization.split(' ')[1];
-
-    const userId = await JwtStrategy.getUserIdFromToken(token);
-
-    console.log(userId)
+    // console.log(userId)
 
     // Lấy các mục giỏ hàng của user mà productId nằm trong danh sách selectedProductIds
     const cartItems = body.carts;
