@@ -48,4 +48,16 @@ export class UserController {
   async getCartsByUserId(@Param('id') userId: string) {
     return await this.userService.getUserCart(userId);
   }
+
+  @Post('block/:userId')
+  async blockUser(
+    @Param('userId') userId: string,  
+    @Body() body: any, // Nhận body như một đối tượng bất kỳ
+  ) {
+    // console.log('Request body:', body); // In ra toàn bộ body
+    const { isBlock } = body;
+    // console.log('Received isBlock:', isBlock);  
+    return this.userService.blockUser(userId, isBlock);
+  }
+  
 }
