@@ -66,6 +66,8 @@ export class OrderService {
     });
     return new ResponsePaginate(result, pageMetaDto, 'Success');
   }
+  
+ 
 
   async findOneById(id: string) {
     const order = await this.ordersRepository
@@ -76,7 +78,6 @@ export class OrderService {
     return order;
   }
   
-
   async update(id: string, updateOrderDto: UpdateOrderDto) {
     if (!uuidValidate(id)) {
       throw new BadRequestException('Invalid UUID');
@@ -100,6 +101,7 @@ export class OrderService {
     } catch (error) {
       throw error;
     }
+    return { data: null, message: 'Successfully update order' };
   }
 
   async remove(id: string) {
@@ -278,5 +280,9 @@ export class OrderService {
       where: filterCondition,
       relations: ['orderDetail', 'orderDetail.product'], // Bao gồm thông tin chi tiết đơn hàng
     });
+  }
+
+  async findAllOrder(): Promise<Orders[]> {
+    return await this.ordersRepository.find(); // Lấy tất cả đơn hàng
   }
 }

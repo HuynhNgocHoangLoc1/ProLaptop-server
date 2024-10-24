@@ -10,11 +10,12 @@ import { ReviewService } from '../review/review.service';
 import { Product } from 'src/entities/product.entity';
 import { Cart } from 'src/entities/cart.entity';
 import { User } from 'src/entities/user.entity';
+import { AdminOrderController } from './admin-order.controller';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Orders, Review, Product, OrderDetail, Cart,User]),
   ],
-  controllers: [OrderController],
+  controllers: [OrderController, AdminOrderController],
   providers: [OrderService, ReviewService],
 })
 export class OrderModule {}
