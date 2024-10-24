@@ -20,7 +20,7 @@ export class Review extends AbstractEntity {
     @Column()
     comment: string;
 
-    @Column()
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     date: Date;
 
     @ManyToOne(() => Product, (product) => product.review)

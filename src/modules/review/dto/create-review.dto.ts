@@ -12,7 +12,4 @@ export class CreateReviewDto {
 
     @IsNotEmpty()
     comment: string;
-
-    @IsNotEmpty()
-    date: Date;
 }

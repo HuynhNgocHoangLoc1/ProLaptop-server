@@ -70,7 +70,6 @@ export class ReviewService {
       review.orderId = updateReviewDto.orderId;
       review.rating = updateReviewDto.rating;
       review.comment = updateReviewDto.comment;
-      review.date = updateReviewDto.date;
       await this.entityManager.save(review);
     } catch (error) {
       throw error;

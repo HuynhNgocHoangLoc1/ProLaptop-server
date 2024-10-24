@@ -6,7 +6,7 @@ import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { GetUserDto } from "./dto/get-user.dto";
-import { Order } from 'src/common/enum/enum';
+import { Order, RoleEnum } from 'src/common/enum/enum';
 import { PageMetaDto } from "src/common/dtos/pageMeta";
 import { ResponsePaginate } from "src/common/dtos/responsePaginate";
 import { validate as uuidValidate } from 'uuid';
@@ -145,4 +145,25 @@ export class UserService {
 
         return { cart: userWithCart.cart, message: 'Success' };
     }
+
+    async blockUser(userId: string, isBlock: boolean) {
+        // console.log('isBlock value:', isBlock);  // In ra giá trị của isBlock
+      
+        const user = await this.usersRepository.findOne({ where: { id: userId } });
+      
+        if (!user) {
+          throw new NotFoundException('User not found');
+        }
+      
+        if (user.role === RoleEnum.ADMIN) {
+          throw new BadRequestException('Cannot block admin account');
+        }
+      
+        user.isBlock = isBlock;
+        await this.usersRepository.save(user);
+      
+        return {
+          message: isBlock ? 'Block account success!' : 'Unlock account success!',
+        };
+      }
 }

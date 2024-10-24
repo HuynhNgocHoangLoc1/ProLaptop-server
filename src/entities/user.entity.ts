@@ -50,6 +50,9 @@ export class User extends AbstractEntity {
   })
   role: RoleEnum;
 
+  @Column({ default: false }) 
+  isBlock: boolean;
+
   @OneToMany(() => Orders, (order) => order.user, {
     cascade: true,
     onUpdate: 'CASCADE',

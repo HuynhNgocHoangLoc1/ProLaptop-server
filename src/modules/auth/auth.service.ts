@@ -36,6 +36,7 @@ export class AuthService {
       phone: user.phoneNumber,
       avatar: user.avatar,
       role: user.role,
+      isBlock: user.isBlock
     };
   }
 

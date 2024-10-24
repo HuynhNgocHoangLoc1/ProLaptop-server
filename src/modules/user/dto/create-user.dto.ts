@@ -15,5 +15,5 @@ export class CreateUserDto {
     @IsOptional() // Để avatar là optional thay vì bắt buộc
     avatar?: string;
     @IsNotEmpty()
-    phoneNumber: String; 
+    phoneNumber: string; 
 }
