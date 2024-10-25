@@ -67,7 +67,7 @@ export class ReviewService {
         throw new UserNotFoundException();
       }
       review.productId  = updateReviewDto.productId ;
-      review.orderId = updateReviewDto.orderId;
+      review.orderDetailId = updateReviewDto.orderDetailId;
       review.rating = updateReviewDto.rating;
       review.comment = updateReviewDto.comment;
       await this.entityManager.save(review);

@@ -3,11 +3,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { AbstractEntity } from '../common/entities/abstract.entity';
 import { Orders } from './order.entity';
 import { Product } from './product.entity';
+import { Review } from './review.entity';
 
 @Entity()
 export class OrderDetail extends AbstractEntity {
@@ -32,6 +34,9 @@ export class OrderDetail extends AbstractEntity {
   @ManyToOne(() => Product, (product) => product.orderDetail)
   @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
   product: Product;
+
+  @OneToOne(() => Review, (review) => review.orderDetail, { nullable: true })
+  review: Review;
 
   constructor(orderDetail: Partial<OrderDetail>) {
     super();

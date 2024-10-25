@@ -2,6 +2,7 @@ import { AbstractEntity } from 'src/common/entities';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { Product } from './product.entity';
 import { Orders } from './order.entity';
+import { OrderDetail } from './order-detail.entity';
 
 @Entity()
 export class Review extends AbstractEntity {
@@ -12,7 +13,7 @@ export class Review extends AbstractEntity {
     productId: string;
 
     @Column()
-    orderId: string;
+    orderDetailId: string;
 
     @Column({ default: 0 })
     rating: number;
@@ -27,9 +28,9 @@ export class Review extends AbstractEntity {
     @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
     product: Product;
 
-    @OneToOne(() => Orders, { nullable: true })
-    @JoinColumn({ name: 'orderId', referencedColumnName: 'id' })
-    order: Orders;
+    @OneToOne(() => OrderDetail, { nullable: true })
+    @JoinColumn({ name: 'orderDetailId', referencedColumnName: 'id' })
+    orderDetail: OrderDetail;
 
     constructor(review: Partial<Review>) {
         super();

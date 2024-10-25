@@ -278,7 +278,7 @@ export class OrderService {
     // Trả về danh sách đơn hàng dựa trên điều kiện lọc
     return await this.ordersRepository.find({
       where: filterCondition,
-      relations: ['orderDetail', 'orderDetail.product'], // Bao gồm thông tin chi tiết đơn hàng
+      relations: ['orderDetail', 'orderDetail.product','orderDetail.review'], // Bao gồm thông tin chi tiết đơn hàng
     });
   }
 

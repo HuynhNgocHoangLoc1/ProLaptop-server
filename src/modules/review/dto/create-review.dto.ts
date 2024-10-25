@@ -5,7 +5,7 @@ export class CreateReviewDto {
     productId: string;
     
     @IsNotEmpty()
-    orderId: string;
+    orderDetailId: string;
 
     @IsNotEmpty()
     rating: number;
