@@ -1,12 +1,9 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class CreateCategoryDto {
     @IsNotEmpty()
     name: string;
 
-    @IsNotEmpty()
-    description: string;
-
-    @IsNotEmpty()
-    iconUrl: string;
+    @IsOptional()
+    iconUrl?: string;
 }

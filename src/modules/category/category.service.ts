@@ -10,6 +10,7 @@ import { PageMetaDto } from 'src/common/dtos/pageMeta';
 import { Order } from 'src/common/enum/enum'
 import { validate as uuidValidate } from 'uuid';
 import { UserNotFoundException } from 'src/common/exception/not-found';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 
 @Injectable()
@@ -18,9 +19,15 @@ export class CategoryService {
     @InjectRepository(Category)
     private readonly categorysRepository: Repository<Category>,
     private readonly entityManager: EntityManager,
+    private readonly cloudinaryService: CloudinaryService
   ) { }
-  async create(createCategoryDto: CreateCategoryDto) {
+  async create(createCategoryDto: CreateCategoryDto, iconUrl?: Express.Multer.File) {
     const category = new Category(createCategoryDto);
+
+    if (iconUrl) {
+      const iconUrlPicture = await this.uploadAndReturnUrl(iconUrl);
+      category.iconUrl = iconUrlPicture;
+    }
     await this.entityManager.save(category);
     return { category, message: 'Successfully created category' };
   }
@@ -55,26 +62,25 @@ export class CategoryService {
   }
 
 
-  async update(
-    id: string, updateCategoryDto: UpdateCategoryDto,
-  ) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Invalid UUID');
-    }
+  async update(id: string, updateCategoryDto: UpdateCategoryDto, iconUrl?: Express.Multer.File) { // Thay đổi từ Multer.File sang Express.Multer.File
     try {
-      const category = await this.categorysRepository.findOneBy({ id });
-      if (!category) {
-        throw new UserNotFoundException();
-      }
-      category.name = updateCategoryDto.name;
-      category.description = updateCategoryDto.description;
-      category.iconUrl = updateCategoryDto.iconUrl;
-  
-      await this.entityManager.save(category);
+        const category = await this.categorysRepository.findOneBy({ id });
+        if (!category) {
+            return { message: 'Category not found' };
+        }
+
+        if (iconUrl) {
+            await this.deleteOldAvatar(category);
+            category.iconUrl = await this.uploadAndReturnUrl(iconUrl);
+        }
+        category.name = updateCategoryDto.name;
+        
+        await this.entityManager.save(category);
+        return { iconUrl: category.iconUrl };
     } catch (error) {
-      throw error;
+        throw error;
     }
-  }
+}
 
   async remove(id: string) {
     if (!uuidValidate(id)) {
@@ -90,4 +96,21 @@ export class CategoryService {
     await this.categorysRepository.softDelete(id);
     return { data: null, message: 'category deletion successful' };
   }
+
+  async deleteOldAvatar(category: Category): Promise<void> {
+    if (category.iconUrl) {
+        const publicId = this.cloudinaryService.extractPublicIdFromUrl(category.iconUrl);
+        await this.cloudinaryService.deleteFile(publicId);
+    }
+}
+
+  async uploadAndReturnUrl(file: Express.Multer.File): Promise<string> { // Thay đổi từ Multer.File sang Express.Multer.File
+    try {
+        const result = await this.cloudinaryService.uploadImageFile(file);
+        return result.secure_url;
+    } catch (error) {
+        console.error('Error uploading image to Cloudinary:', error);
+        throw error;
+    }
+}
 }
