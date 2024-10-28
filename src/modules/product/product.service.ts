@@ -48,25 +48,31 @@ async create(
     return { product, message: 'Successfully create product' };
 }
 
-  async findAll(params: GetProductDto) {
-    const product = this.productsRepository
-      .createQueryBuilder('product')
-      .select(['product'])
-      .skip(params.skip)
-      .take(params.take)
-      .orderBy('product.createdAt', Order.DESC);
-    if (params.search) {
-      product.andWhere('product.product ILIKE :product', {
-        product: `%${params.search}%`,
-      });
-    }
-    const [result, total] = await product.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({
-      itemCount: total,
-      pageOptionsDto: params,
+async findAll(params: GetProductDto) {
+  const product = this.productsRepository
+    .createQueryBuilder('product')
+    .leftJoinAndSelect('product.category', 'category') 
+    .select(['product', 'category']) 
+    .skip(params.skip)
+    .take(params.take)
+    .orderBy('product.createdAt', 'DESC'); // Sửa lại Order thành 'DESC'
+
+  if (params.search) {
+    product.andWhere('product.name ILIKE :product', { // Sửa 'product' thành 'name' để tìm kiếm theo tên sản phẩm
+      product: `%${params.search}%`,
     });
-    return new ResponsePaginate(result, pageMetaDto, 'Success');
   }
+
+  const [result, total] = await product.getManyAndCount();
+  
+  const pageMetaDto = new PageMetaDto({
+    itemCount: total,
+    pageOptionsDto: params,
+  });
+
+  return new ResponsePaginate(result, pageMetaDto, 'Success');
+}
+
 
   async findOneById(id: string) {
     const product = await this.productsRepository

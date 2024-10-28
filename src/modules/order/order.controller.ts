@@ -94,6 +94,7 @@ export class OrderController {
 
   @Get()
   @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
+
   async getListOrderByUser( @Req() request: any) {
     const listOrder = await this.orderService.getListOrderByUser(request);
     return { message: 'Order fetched successfully',order: listOrder };
