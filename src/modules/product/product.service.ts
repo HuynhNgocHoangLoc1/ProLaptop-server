@@ -30,22 +30,32 @@ export class ProductService {
 }
 
 async create(
-    createProductDto: CreateProductDto,
-    imageUrl?: Express.Multer.File,
+  createProductDto: CreateProductDto,
+  imageUrl?: Express.Multer.File,
 ) {
-    const categoryExists = await this.checkCategoryExists(createProductDto.categoryId);
-    if (!categoryExists) {
-        throw new BadRequestException('Category does not exist');
-    }
+  const categoryExists = await this.checkCategoryExists(createProductDto.categoryId);
+  if (!categoryExists) {
+    throw new BadRequestException('Category does not exist');
+  }
 
-    const product = new Product(createProductDto);
+  const product = new Product(createProductDto);
 
-    if (imageUrl) {
-        const imageUrlPicture = await this.uploadAndReturnUrl(imageUrl);
-        product.imageUrl = imageUrlPicture;
-    }
-    await this.entityManager.save(product);
-    return { product, message: 'Successfully create product' };
+  if (imageUrl) {
+    const imageUrlPicture = await this.uploadAndReturnUrl(imageUrl);
+    product.imageUrl = imageUrlPicture;
+  }
+
+  await this.entityManager.save(product);
+
+  // Lấy thông tin category
+  const category = await this.entityManager.findOne(Category, {
+    where: { id: createProductDto.categoryId },
+  });
+
+  return {
+    product: { ...product, category }, // Thêm thông tin category vào response
+    message: 'Successfully create product',
+  };
 }
 
 async findAll(params: GetProductDto) {
