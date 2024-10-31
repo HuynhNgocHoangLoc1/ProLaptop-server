@@ -22,18 +22,25 @@ export class MyGateway implements OnModuleInit {
 
   onModuleInit() {
     this.server.on('connection', (socket) => {
-      console.log(socket.id);
-      console.log('Connected');
+      console.log(`User connected: ${socket.id}`);
+      
+      socket.on('joinRoom', (userId) => {
+        socket.join(userId);
+        console.log(`User ${socket.id} joined room: ${userId}`);
+      });
     });
   }
-
+  
   @SubscribeMessage('newMessage')
-  async onNewMessage(@MessageBody() body: CreateChatboxDto) { // Đánh dấu là async
-    const newMessage = await this.chatboxService.addMessage(body); // Gọi addMessage với await
-    console.log(newMessage);
-    this.server.emit('onMessage', {
+  async onNewMessage(@MessageBody() body: CreateChatboxDto) {
+    const newMessage = await this.chatboxService.addMessage(body);
+    const roomId = body.userId; // room ID là userId
+  
+    // Phát tin nhắn mới trong phòng của user đó
+    this.server.to(roomId).emit('onMessage', {
       msg: 'New Message',
       content: newMessage,
     });
   }
+  
 }

@@ -38,8 +38,6 @@ export class OrderService {
     @InjectRepository(Cart)
     private readonly cartRepository: Repository<Cart>,
     private readonly entityManager: EntityManager,
-
-
   ) {}
   async create(createOrderDto: CreateOrderDto) {
     const order = new Orders(createOrderDto);
@@ -47,7 +45,6 @@ export class OrderService {
     return { order, message: 'Successfully created order' };
   }
 
-  
   async findAll(params: GetOrderDto) {
     const order = this.ordersRepository
       .createQueryBuilder('order')
@@ -67,8 +64,6 @@ export class OrderService {
     });
     return new ResponsePaginate(result, pageMetaDto, 'Success');
   }
-  
- 
 
   async findOneById(id: string) {
     const order = await this.ordersRepository
@@ -78,7 +73,7 @@ export class OrderService {
       .getOne();
     return order;
   }
-  
+
   async update(id: string, updateOrderDto: UpdateOrderDto) {
     if (!uuidValidate(id)) {
       throw new BadRequestException('Invalid UUID');
@@ -201,24 +196,25 @@ export class OrderService {
   }
 
   async createOrderFromCart(userId: any, body: any) {
-
     // console.log(userId)
 
     // Lấy các mục giỏ hàng của user mà productId nằm trong danh sách selectedProductIds
     const cartItems = body.carts;
-  
+
     // Kiểm tra xem có mục giỏ hàng nào không
     if (cartItems.length === 0) {
-      throw new NotFoundException('No items found in the cart with the selected product IDs');
+      throw new NotFoundException(
+        'No items found in the cart with the selected product IDs',
+      );
     }
-  
+
     // Tạo order mới với thông tin userId, date, name và email
     const newOrder = this.ordersRepository.create({
-      userId : userId,
+      userId: userId,
       date: new Date(),
       name: body.name,
       email: body.email,
-      phoneNumber: body.phoneNumber,  
+      phoneNumber: body.phoneNumber,
       shippingAddress: body.shippingAddress,
       // paymentMethod: body.paymentMethod,
       paymentMethod: PaymentMethod.CASH_ON_DELIVERY,
@@ -227,32 +223,31 @@ export class OrderService {
     });
 
     const savedOrder = await this.ordersRepository.save(newOrder);
-  
+
     // Lưu orderId và productId vào từng OrderDetail, sử dụng Promise.all để chạy song song
-    const orderDetailsPromises = cartItems.map((cartItem : any) => {
+    const orderDetailsPromises = cartItems.map((cartItem: any) => {
       const orderDetail = this.orderDetailRepository.create({
         orderId: savedOrder.id,
         productId: cartItem.productId,
-        quantity: cartItem.quantity, 
-        price: cartItem.price, 
+        quantity: cartItem.quantity,
+        price: cartItem.price,
       });
       // Lưu OrderDetail vào database
       return this.orderDetailRepository.save(orderDetail);
     });
-  
+
     await Promise.all(orderDetailsPromises);
-  
+
     // Xóa các mục CartItem đã tạo order khỏi giỏ hàng
     cartItems.map(async (cartItem: any) => {
       // console.log("CartItem ID:", cartItem.id); // Kiểm tra ID
       if (cartItem.id) {
         await this.cartRepository.delete(cartItem.id);
       } else {
-        console.log("Cart item has no ID:", cartItem);
+        console.log('Cart item has no ID:', cartItem);
       }
     });
-    
-  
+
     return { message: 'Order created successfully', order: savedOrder };
   }
 
@@ -264,22 +259,22 @@ export class OrderService {
     if (!userId) {
       throw new UnauthorizedException('Invalid or expired token');
     }
-  
+
     // Lấy giá trị `status` từ query parameters
     const { status } = request.query;
-  
+
     // Khai báo điều kiện lọc là kiểu `any` để linh hoạt
     let filterCondition: any = { userId: userId };
-  
+
     // Nếu `status` không phải là 'product', thêm điều kiện lọc theo `statusDelivery`
     if (status) {
       filterCondition.statusDelivery = status;
     }
-  
+
     // Trả về danh sách đơn hàng dựa trên điều kiện lọc
     return await this.ordersRepository.find({
       where: filterCondition,
-      relations: ['orderDetail', 'orderDetail.product','orderDetail.review'], // Bao gồm thông tin chi tiết đơn hàng
+      relations: ['orderDetail', 'orderDetail.product', 'orderDetail.review'], // Bao gồm thông tin chi tiết đơn hàng
     });
   }
 
@@ -287,34 +282,64 @@ export class OrderService {
     return await this.ordersRepository.find(); // Lấy tất cả đơn hàng
   }
 
-  async calculateTotalSuccessOrders() {
+  async totalRevenue() {
     const successfulOrders = await this.ordersRepository.find({
       where: { statusDelivery: StatusDelivery.SUCCESS },
     });
 
     // Tính tổng tiền
-    const totalAmount = successfulOrders.reduce((acc, order) => acc + order.price, 0);
+    const totalAmount = successfulOrders.reduce(
+      (acc, order) => acc + order.price,
+      0,
+    );
 
     return { totalAmount, message: 'Total amount for successful orders' };
   }
-  async calculateTotalSuccessOrdersWeekly() {
+  async calculateDailySuccessOrdersWeekly() {
     const startOfWeek = this.getStartOfWeek();
     const endOfWeek = this.getEndOfWeek();
 
-    const total = await this.ordersRepository
+    const dailyRevenue = await this.ordersRepository
       .createQueryBuilder('order')
-      .select('SUM(order.price)', 'total')
+      .select('DATE(order.createdAt) AS date, SUM(order.price) AS total')
       .where('order.statusDelivery = :status', { status: 'success' })
       .andWhere('order.createdAt BETWEEN :start AND :end', {
         start: startOfWeek,
         end: endOfWeek,
       })
-      .getRawOne();
+      .groupBy('DATE(order.createdAt)')
+      .orderBy('DATE(order.createdAt)', 'ASC')
+      .getRawMany();
 
-    return {
-      total: total.total ? Number(total.total) : 0,
-    };
-  }
+    console.log('Daily Revenue:', dailyRevenue); // Ghi log doanh thu hàng ngày
+
+    const result = [];
+    for (
+      let date = startOfWeek;
+      date <= endOfWeek;
+      date.setDate(date.getDate() + 1)
+    ) {
+      const formattedDate = date.toISOString().slice(0, 10); // Định dạng thành YYYY-MM-DD
+      const revenueEntry = dailyRevenue.find(
+        (entry) => {
+            // Kiểm tra kiểu dữ liệu của entry.date
+            if (typeof entry.date === 'string') {
+                return entry.date.slice(0, 10) === formattedDate;
+            } else if (entry.date instanceof Date) {
+                return entry.date.toISOString().slice(0, 10) === formattedDate;
+            }
+            return false; // Nếu không phải chuỗi hoặc Date, trả về false
+        }
+      );
+      console.log(`Checking date: ${formattedDate}, Revenue Entry:`, revenueEntry); // Ghi log từng ngày và doanh thu tương ứng
+      result.push({
+        date: formattedDate,
+        revenue: revenueEntry ? Number(revenueEntry.total) : 0,
+      });
+    }
+
+    return result;
+}
 
   private getStartOfWeek() {
     const today = new Date();
@@ -327,5 +352,4 @@ export class OrderService {
     const lastDayOfWeek = today.getDate() - today.getDay() + 7; // Chủ Nhật
     return new Date(today.setDate(lastDayOfWeek));
   }
-
 }

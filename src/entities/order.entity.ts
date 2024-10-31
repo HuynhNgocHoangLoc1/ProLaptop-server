@@ -21,7 +21,7 @@ export class Orders extends AbstractEntity {
   @Column()
   userId: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'date', default: () => 'CURRENT_DATE' })
   date: Date;
 
   @Column()

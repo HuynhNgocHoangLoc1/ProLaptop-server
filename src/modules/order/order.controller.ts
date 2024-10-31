@@ -34,16 +34,17 @@ export class OrderController {
   async create(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);
   }
-  @Get('/total-success-weekly')
-  async getTotalSuccessOrdersWeekly() {
-    return this.orderService.calculateTotalSuccessOrdersWeekly();
+
+  @Get('/daily-success-weekly')
+  async getDailySuccessOrdersWeekly() {
+    return this.orderService.calculateDailySuccessOrdersWeekly();
   }
 
   @Get('/total-success')
   async getTotalSuccessOrders() {
-    return this.orderService.calculateTotalSuccessOrders();
+    return this.orderService.totalRevenue();
   }
-  
+
   @Get('/:id')
   async findOneById(@Param('id') id: string) {
     return this.orderService.findOneById(id);
@@ -103,10 +104,8 @@ export class OrderController {
 
   @Get()
   @UseGuards(AuthGuard, new RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))
-
-  async getListOrderByUser( @Req() request: any) {
+  async getListOrderByUser(@Req() request: any) {
     const listOrder = await this.orderService.getListOrderByUser(request);
-    return { message: 'Order fetched successfully',order: listOrder };
-  }  
-
+    return { message: 'Order fetched successfully', order: listOrder };
+  }
 }
