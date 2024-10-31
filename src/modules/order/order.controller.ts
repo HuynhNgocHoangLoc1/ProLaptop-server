@@ -34,7 +34,16 @@ export class OrderController {
   async create(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);
   }
+  @Get('/total-success-weekly')
+  async getTotalSuccessOrdersWeekly() {
+    return this.orderService.calculateTotalSuccessOrdersWeekly();
+  }
 
+  @Get('/total-success')
+  async getTotalSuccessOrders() {
+    return this.orderService.calculateTotalSuccessOrders();
+  }
+  
   @Get('/:id')
   async findOneById(@Param('id') id: string) {
     return this.orderService.findOneById(id);

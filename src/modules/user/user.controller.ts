@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ValidationPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+  ValidationPipe,
+  Query,
+} from '@nestjs/common';
 import { UserService } from './userService';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -23,6 +35,15 @@ export class UserController {
     return this.userService.findAll(params);
   }
 
+  @Get('count')
+  async getTotalUserCount() {
+    const totalCount = await this.userService.getTotalUserCount();
+    return {
+      total: totalCount,
+      message: 'Total user count fetched successfully',
+    };
+  }
+  
   @Get(':id')
   async findOneById(@Param('id') id: string) {
     return this.userService.findOneById(id);
@@ -50,14 +71,12 @@ export class UserController {
   }
 
   @Post('block/:userId')
-  async blockUser(
-    @Param('userId') userId: string,  
-    @Body() body: any, 
-  ) {
-    // console.log('Request body:', body); 
+  async blockUser(@Param('userId') userId: string, @Body() body: any) {
+    // console.log('Request body:', body);
     const { isBlock } = body;
-    // console.log('Received isBlock:', isBlock);  
+    // console.log('Received isBlock:', isBlock);
     return this.userService.blockUser(userId, isBlock);
   }
-  
+
+
 }

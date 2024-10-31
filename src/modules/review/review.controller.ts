@@ -12,7 +12,14 @@ export class ReviewController {
   async create(@Body() createReviewDto: CreateReviewDto) {
     return this.reviewService.create(createReviewDto);
   }
-
+  @Get('count')
+  async getTotalReviewCount() {
+    const totalCount = await this.reviewService.getTotalReviewCount();
+    return {
+      total: totalCount,
+      message: 'Total review count fetched successfully',
+    };
+  }
 
   @Get()
   async findAll(@Query() params: GetReviewDto) {
@@ -24,8 +31,6 @@ export class ReviewController {
     return this.reviewService.findOneById(id);
   }
 
-
-  
   @Patch(':id')
   async update(
     @Param('id') id: string,

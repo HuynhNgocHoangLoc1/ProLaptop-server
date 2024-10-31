@@ -166,4 +166,9 @@ export class UserService {
           message: isBlock ? 'Block account success!' : 'Unlock account success!',
         };
       }
+
+      async getTotalUserCount(): Promise<number> {
+        return await this.usersRepository.count();
+    }
+    
 }

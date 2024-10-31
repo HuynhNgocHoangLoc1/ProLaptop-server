@@ -52,6 +52,7 @@ export class CategoryService {
     return new ResponsePaginate(result, pageMetaDto, 'Success');
   }
 
+  
   async findOneById(id: string) {
     const category = await this.categorysRepository
       .createQueryBuilder('category')
@@ -112,5 +113,24 @@ export class CategoryService {
         console.error('Error uploading image to Cloudinary:', error);
         throw error;
     }
+}
+async getTotalCategoryCount(): Promise<number> {
+  return await this.categorysRepository.count();
+}
+
+async getProductCountByCategory(): Promise<any[]> {
+  // Lấy danh sách tất cả các danh mục cùng với sản phẩm của chúng
+  const categories = await this.categorysRepository
+    .createQueryBuilder('category')
+    .leftJoinAndSelect('category.product', 'product') // JOIN với bảng sản phẩm
+    .getMany(); // Lấy tất cả danh mục
+
+  // Chuyển đổi kết quả thành định dạng mong muốn
+  const formattedResults = categories.map(category => ({
+    category: category.name, // Tên danh mục
+    count: category.product.length // Đếm số lượng sản phẩm
+  }));
+
+  return formattedResults;
 }
 }

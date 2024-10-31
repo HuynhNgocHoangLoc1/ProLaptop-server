@@ -47,6 +47,7 @@ export class OrderService {
     return { order, message: 'Successfully created order' };
   }
 
+  
   async findAll(params: GetOrderDto) {
     const order = this.ordersRepository
       .createQueryBuilder('order')
@@ -285,4 +286,46 @@ export class OrderService {
   async findAllOrder(): Promise<Orders[]> {
     return await this.ordersRepository.find(); // Lấy tất cả đơn hàng
   }
+
+  async calculateTotalSuccessOrders() {
+    const successfulOrders = await this.ordersRepository.find({
+      where: { statusDelivery: StatusDelivery.SUCCESS },
+    });
+
+    // Tính tổng tiền
+    const totalAmount = successfulOrders.reduce((acc, order) => acc + order.price, 0);
+
+    return { totalAmount, message: 'Total amount for successful orders' };
+  }
+  async calculateTotalSuccessOrdersWeekly() {
+    const startOfWeek = this.getStartOfWeek();
+    const endOfWeek = this.getEndOfWeek();
+
+    const total = await this.ordersRepository
+      .createQueryBuilder('order')
+      .select('SUM(order.price)', 'total')
+      .where('order.statusDelivery = :status', { status: 'success' })
+      .andWhere('order.createdAt BETWEEN :start AND :end', {
+        start: startOfWeek,
+        end: endOfWeek,
+      })
+      .getRawOne();
+
+    return {
+      total: total.total ? Number(total.total) : 0,
+    };
+  }
+
+  private getStartOfWeek() {
+    const today = new Date();
+    const firstDayOfWeek = today.getDate() - today.getDay() + 1; // Thứ Hai
+    return new Date(today.setDate(firstDayOfWeek));
+  }
+
+  private getEndOfWeek() {
+    const today = new Date();
+    const lastDayOfWeek = today.getDate() - today.getDay() + 7; // Chủ Nhật
+    return new Date(today.setDate(lastDayOfWeek));
+  }
+
 }

@@ -90,4 +90,7 @@ export class ReviewService {
     await this.reviewsRepository.softDelete(id);
     return { data: null, message: 'review deletion successful' };
   }
+  async getTotalReviewCount(): Promise<number> {
+    return await this.reviewsRepository.count();
+  }
 }
