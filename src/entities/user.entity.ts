@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { Orders } from './order.entity';
 import { Cart } from './cart.entity';
+import { Chatbox } from './chatbox.entity';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -64,6 +65,12 @@ export class User extends AbstractEntity {
     onUpdate: 'CASCADE',
   })
   cart: Cart[];
+
+  @OneToMany(() => Chatbox, (chatbox) => chatbox.user, {
+    cascade: true,
+    onUpdate: 'CASCADE',
+  })
+  chatbox: Chatbox[];
 
   constructor(user: Partial<User>) {
     super();
