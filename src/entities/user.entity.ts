@@ -54,6 +54,12 @@ export class User extends AbstractEntity {
   @Column({ default: false }) 
   isBlock: boolean;
 
+  @Column({ nullable: true }) // Thêm thuộc tính otp
+  otp: string;
+
+  @Column({ type: 'timestamp', nullable: true }) // Thêm thuộc tính otpExpires
+  otpExpires: Date;
+
   @OneToMany(() => Orders, (order) => order.user, {
     cascade: true,
     onUpdate: 'CASCADE',

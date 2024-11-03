@@ -15,6 +15,7 @@ import { SeedingModule } from './database/seeding/seeding.module';
 import { CartModule } from './modules/cart/cart.module';
 import { PaymentModule } from './modules/zalo-payment/payment.module';
 import { ChatboxModule } from './modules/chatbox/chatbox.module';
+import { EmailService } from './modules/email/email.service';
 
 @Module({
   imports: [
@@ -35,7 +36,8 @@ import { ChatboxModule } from './modules/chatbox/chatbox.module';
   controllers: [AppController],
   providers: [
     AppService,
-    CloudinaryService 
+    CloudinaryService,
+    EmailService 
   ],
 })
 export class AppModule {}

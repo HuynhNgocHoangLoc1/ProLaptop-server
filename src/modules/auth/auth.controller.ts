@@ -48,4 +48,22 @@ export class AuthController {
       res.status(500).json({ message: 'Internal server error', error: error.message }); // Trả về thông báo lỗi cụ thể
     }
   }
+
+  @Post('request-password-reset')
+  async requestPasswordReset(@Body('email') email: string) {
+    return this.authService.requestPasswordReset(email);
+  }
+
+  @Post('verify-otp')
+  async verifyOtp(@Body('email') email: string, @Body('otp') otp: string) {
+    return this.authService.verifyOtp(email, otp);
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Body('email') email: string,
+    @Body('newPassword') newPassword: string,
+  ) {
+    return this.authService.resetPassword(email, newPassword);
+  }
 }

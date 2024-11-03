@@ -171,4 +171,23 @@ export class UserService {
         return await this.usersRepository.count();
     }
     
+    async findByEmail(email: string): Promise<User | undefined> {
+        return this.usersRepository.findOne({ where: { email } });
+      }
+    
+      async saveOtp(userId: string, otp: string): Promise<void> {
+        await this.usersRepository.update(userId, {
+          otp,
+          otpExpires: new Date(Date.now() + 15 * 60 * 1000), // 15 phút hết hạn
+        });
+      }
+      
+      async clearOtp(userId: string): Promise<void> {
+        await this.usersRepository.update(userId, { otp: null, otpExpires: null });
+      }
+      
+      async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+        await this.usersRepository.update(userId, { password: hashedPassword });
+      }
+      
 }

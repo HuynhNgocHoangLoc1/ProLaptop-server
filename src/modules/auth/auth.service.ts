@@ -1,11 +1,13 @@
-// auth.service.ts
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Profile } from 'passport-google-oauth20';
 import { UserService } from '../user/userService';
 import { User } from 'src/entities/user.entity';
+import { EmailService } from '../email/email.service';
+import * as crypto from 'crypto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +15,8 @@ export class AuthService {
     @InjectRepository(User)
     private readonly authRepository: Repository<User>,
     private readonly userService: UserService,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
 
   async signIn(userName: string, pass: string): Promise<any> {
@@ -79,5 +82,40 @@ export class AuthService {
       }
       throw error; 
     }
+  }
+
+  async requestPasswordReset(email: string) {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const otp = crypto.randomInt(1000, 9999).toString();
+    await this.userService.saveOtp(user.id, otp);
+    await this.emailService.sendOtp(email, otp);
+
+    return { message: 'OTP sent to your email' };
+  }
+
+  async verifyOtp(email: string, otp: string) {
+    const user = await this.userService.findByEmail(email);
+    if (!user || user.otp !== otp || user.otpExpires < new Date()) {
+      throw new Error('Invalid or expired OTP');
+    }
+  
+    await this.userService.clearOtp(user.id);
+    return { message: 'OTP verified' };
+  }
+
+  async resetPassword(email: string, newPassword: string) {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+  
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.userService.updatePassword(user.id, hashedPassword);
+  
+    return { message: 'Password successfully updated' };
   }
 }
