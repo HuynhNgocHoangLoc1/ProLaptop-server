@@ -10,7 +10,7 @@ export enum StatusEnum {
 
 export enum PaymentMethod {
   CASH_ON_DELIVERY = 'Cash on Delivery',
-  ZALOPAY = 'zalopay',
+  ZALOPAY = 'ZALOPAY',
 }
 
 export enum StatusDelivery {

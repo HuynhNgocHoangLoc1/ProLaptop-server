@@ -216,12 +216,11 @@ export class OrderService {
       email: body.email,
       phoneNumber: body.phoneNumber,
       shippingAddress: body.shippingAddress,
-      // paymentMethod: body.paymentMethod,
-      paymentMethod: PaymentMethod.CASH_ON_DELIVERY,
+      paymentMethod: body.paymentMethod,
       statusDelivery: StatusDelivery.PENDING,
       price: body.totalPrice,
     });
-
+    
     const savedOrder = await this.ordersRepository.save(newOrder);
 
     // Lưu orderId và productId vào từng OrderDetail, sử dụng Promise.all để chạy song song

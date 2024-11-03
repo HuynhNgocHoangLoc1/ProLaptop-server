@@ -21,27 +21,57 @@ export class AuthService {
 
   async signIn(userName: string, pass: string): Promise<any> {
     const user = await this.authRepository.findOne({ where: { userName } });
-    if (user?.password !== pass) {
-      throw new UnauthorizedException();
+    
+    // Kiểm tra xem người dùng có tồn tại không
+    if (!user) {
+        throw new UnauthorizedException(); // Ném ra lỗi nếu không tìm thấy người dùng
     }
+
+    let isPasswordValid = false;
+
+    // Kiểm tra xem mật khẩu trong DB có phải là hash hợp lệ không
+    const isHashedPassword = user.password.length === 60 && user.password.startsWith('$2b$');
+    
+    if (isHashedPassword) {
+        // So sánh mật khẩu nhập vào với hash trong cơ sở dữ liệu
+        isPasswordValid = await bcrypt.compare(pass, user.password);
+    } else {
+        // So sánh trực tiếp nếu mật khẩu chưa được hash
+        isPasswordValid = pass === user.password;
+        
+        if (isPasswordValid) {
+            // Hash mật khẩu và cập nhật lại cơ sở dữ liệu
+            const hashedPassword = await bcrypt.hash(pass, 10);
+            user.password = hashedPassword;
+            await this.authRepository.save(user);
+        }
+    }
+
+    if (!isPasswordValid) {
+        throw new UnauthorizedException(); // Ném ra lỗi nếu mật khẩu không đúng
+    }
+
+    // Nếu mật khẩu hợp lệ, tạo payload cho JWT
     const payload = {
-      sub: user.id,
-      userName: user.userName,
-      role: user.role,
+        sub: user.id,
+        userName: user.userName,
+        role: user.role,
     };
+
+    // Trả về token và thông tin người dùng
     return {
-      access_token: await this.jwtService.signAsync(payload),
-      id: user.id,
-      userName: user.userName,
-      email: user.email,
-      gender: user.gender,
-      address: user.address,
-      phone: user.phoneNumber,
-      avatar: user.avatar,
-      role: user.role,
-      isBlock: user.isBlock
+        access_token: await this.jwtService.signAsync(payload),
+        id: user.id,
+        userName: user.userName,
+        email: user.email,
+        gender: user.gender,
+        address: user.address,
+        phone: user.phoneNumber,
+        avatar: user.avatar,
+        role: user.role,
+        isBlock: user.isBlock,
     };
-  }
+}
 
   async validateUserFromGoogle(profile: Profile) {
     const { emails, displayName } = profile;
