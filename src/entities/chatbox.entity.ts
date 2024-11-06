@@ -2,26 +2,25 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, Jo
 import { User } from './user.entity';
 
 @Entity()
-export class Chatbox {
+export class Message {
   @PrimaryGeneratedColumn('uuid')
   id: string; // ID của tin nhắn
 
   @Column()
-  userId: string; 
-
-  @Column()
-  content: string; // Nội dung của tin nhắn
+  content: string;
 
   @CreateDateColumn()
-  createdAt: Date; // Thời gian gửi tin nhắn
+  timestamp: Date;
 
-  @ManyToOne(() => User, (user) => user.chatbox, {
-    onDelete: 'CASCADE', // Nếu người dùng bị xóa, các tin nhắn của họ cũng sẽ bị xóa
-  })
-  @JoinColumn({ name: 'userId' })
-  user: User; // Tham chiếu tới user gửi tin nhắn
+  @Column({ default: false })
+  isRead: boolean;
 
-  constructor(chatbox: Partial<Chatbox>) {
-    Object.assign(this, chatbox);
-  }
+  @ManyToOne(() => User, (user) => user.sentMessages)
+  sender: User;
+
+  @ManyToOne(() => User, (user) => user.receivedMessages)
+  receiver: User;
+
+  @Column()
+  senderRole: string;  // 'user' hoặc 'admin'
 }

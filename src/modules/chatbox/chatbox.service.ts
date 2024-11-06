@@ -1,39 +1,64 @@
+// src/messages/message.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CreateChatboxDto } from './dto/create-chatbox.dto';
-import { Chatbox } from 'src/entities/chatbox.entity';
+import { Message } from 'src/entities/chatbox.entity';
 import { User } from 'src/entities/user.entity';
-import { UserService } from '../user/userService';
+import { Repository } from 'typeorm';
 
 @Injectable()
-export class ChatboxService {
+export class MessageService {
   constructor(
-    @InjectRepository(Chatbox) // Tiêm repository cho Chatbox
-    private readonly chatboxRepository: Repository<Chatbox>,
-    private readonly userService: UserService,
+    @InjectRepository(Message)
+    private messageRepository: Repository<Message>,
   ) {}
 
-  // Phương thức để thêm tin nhắn mới
-  async addMessage(createChatboxDto: CreateChatboxDto) {
-    // Tìm kiếm người dùng bằng userId
-    const user = await this.userService.findOneById(createChatboxDto.userId);
-
-    if (!user) {
-      throw new Error('User not found'); // Ném lỗi nếu không tìm thấy người dùng
-    }
-
-    // Tạo một bản ghi tin nhắn mới với thông tin người dùng
-    const newMessage = this.chatboxRepository.create({
-      ...createChatboxDto,
-      user: user, // Thiết lập user liên kết với tin nhắn
+  async sendMessage(content: string, sender: User, receiver: User): Promise<Message> {
+    const message = this.messageRepository.create({
+      content,
+      sender,
+      receiver,
+      senderRole: sender.role,
     });
+    return this.messageRepository.save(message);
+  }
+  
 
-    return await this.chatboxRepository.save(newMessage); // Lưu vào cơ sở dữ liệu
+  async getMessagesBetweenUsers(userId1: string, userId2: string): Promise<Message[]> {
+    return this.messageRepository.find({
+      where: [
+        { sender: { id: userId1 }, receiver: { id: userId2 } },
+        { sender: { id: userId2 }, receiver: { id: userId1 } },
+      ],
+      order: { timestamp: 'ASC' },
+    });
   }
 
-  // Phương thức để lấy tất cả tin nhắn
-  async getAllMessages() {
-    return this.chatboxRepository.find({ relations: ['user'] }); // Lấy tất cả tin nhắn và thông tin người dùng
+  async markMessageAsRead(messageId: string): Promise<void> {
+    await this.messageRepository.update(messageId, { isRead: true });
   }
+
+  async getAllMessages(): Promise<Message[]> {
+    const query = this.messageRepository
+        .createQueryBuilder('message')
+        .leftJoinAndSelect('message.sender', 'sender')
+        .leftJoinAndSelect('message.receiver', 'receiver')
+        .where(qb => {
+            const subQuery = qb
+                .subQuery()
+                .select('MAX(innerMessage.timestamp)', 'latestTimestamp')
+                .from(Message, 'innerMessage')
+                .where(
+                    '(innerMessage.senderId = message.senderId AND innerMessage.receiverId = message.receiverId) ' +
+                    'OR (innerMessage.senderId = message.receiverId AND innerMessage.receiverId = message.senderId)'
+                )
+                .getQuery();
+            return 'message.timestamp = ' + subQuery;
+        })
+        .orderBy('message.timestamp', 'DESC')
+        .getMany();
+
+    return query;
+}
+
+  
 }

@@ -1,18 +1,18 @@
 import { Module } from '@nestjs/common';
-import { ChatboxService } from './chatbox.service';
+import { MessageService } from './chatbox.service';
 // import { ChatboxController } from './chatbox.controller';
-import { MyGateway } from './gateway';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Chatbox } from 'src/entities/chatbox.entity';
 import { User } from 'src/entities/user.entity';
 import { UserService } from '../user/userService';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { Message } from 'src/entities/chatbox.entity';
+import { MessageController } from './chatbox.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Chatbox, User]),
+    TypeOrmModule.forFeature([Message, User]),
   ],
-  // controllers: [ChatboxController],
-  providers: [ChatboxService,MyGateway,UserService,CloudinaryService],
+  controllers: [MessageController],
+  providers: [MessageService,UserService,CloudinaryService],
 })
-export class ChatboxModule {}
+export class MessageModule {}

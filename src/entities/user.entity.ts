@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { Orders } from './order.entity';
 import { Cart } from './cart.entity';
-import { Chatbox } from './chatbox.entity';
+import {  Message } from './chatbox.entity';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -72,11 +72,11 @@ export class User extends AbstractEntity {
   })
   cart: Cart[];
 
-  @OneToMany(() => Chatbox, (chatbox) => chatbox.user, {
-    cascade: true,
-    onUpdate: 'CASCADE',
-  })
-  chatbox: Chatbox[];
+  @OneToMany(() => Message, (message) => message.sender)
+  sentMessages: Message[];
+
+  @OneToMany(() => Message, (message) => message.receiver)
+  receivedMessages: Message[];
 
   constructor(user: Partial<User>) {
     super();
