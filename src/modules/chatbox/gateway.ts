@@ -1,46 +1,39 @@
-// import { OnModuleInit } from '@nestjs/common';
-// import {
-//   MessageBody,
-//   SubscribeMessage,
-//   WebSocketGateway,
-//   WebSocketServer,
-// } from '@nestjs/websockets';
-// import { Server } from 'socket.io';
-// import { ChatboxService } from './chatbox.service';
-// import { CreateChatboxDto } from './dto/create-chatbox.dto';
-
-// @WebSocketGateway({
-//   cors: {
-//     origin: ['https://prolaptop-server.onrender.com'],
-//   },
-// })
-// export class MyGateway implements OnModuleInit {
-//   @WebSocketServer()
-//   server: Server;
-
-//   constructor(private readonly chatboxService: ChatboxService) {} // Inject service
-
-//   onModuleInit() {
-//     this.server.on('connection', (socket) => {
-//       console.log(`User connected: ${socket.id}`);
-      
-//       socket.on('joinRoom', (userId) => {
-//         socket.join(userId);
-//         console.log(`User ${socket.id} joined room: ${userId}`);
-//       });
-//     });
-//   }
+import {
+    WebSocketGateway,
+    WebSocketServer,
+    SubscribeMessage,
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+  } from '@nestjs/websockets';
+  import { Server, Socket } from 'socket.io';
+  import { MessageService } from './chatbox.service';
   
-//   @SubscribeMessage('newMessage')
-//   async onNewMessage(@MessageBody() body: CreateChatboxDto) {
-//     const newMessage = await this.chatboxService.addMessage(body);
-//     const roomId = body.userId; // room ID là userId
+  @WebSocketGateway({ cors: true }) 
+  export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+    @WebSocketServer()
+    server: Server;
   
-//     // Phát tin nhắn mới trong phòng của user đó
-//     this.server.to(roomId).emit('onMessage', {
-//       msg: 'New Message',
-//       content: newMessage,
-//     });
-//   }
+    constructor(private readonly messageService: MessageService) {}
   
-// }
+    handleConnection(client: Socket) {
+      console.log(`Client connected: ${client.id}`);
+    }
+  
+    handleDisconnect(client: Socket) {
+      console.log(`Client disconnected: ${client.id}`);
+    }
+  
+    @SubscribeMessage('sendMessage')
+    async handleSendMessage(
+      client: Socket,
+      payload: { content: string; senderId: string; receiverId: string },
+    ) {
+      const { content, senderId, receiverId } = payload;
+      const message = await this.messageService.createMessage(content, senderId, receiverId);
+  
+      // Gửi tin nhắn đến client cụ thể bằng cách kiểm tra ID của họ
+      this.server.to(receiverId).emit('newMessage', message); // gửi đến receiverId
+      client.emit('newMessage', message); // gửi lại cho người gửi xác nhận tin nhắn
+    }
+  }
+  

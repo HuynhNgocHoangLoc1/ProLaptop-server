@@ -7,12 +7,13 @@ import { UserService } from '../user/userService';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { Message } from 'src/entities/chatbox.entity';
 import { MessageController } from './chatbox.controller';
+import { ChatGateway } from './gateway';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Message, User]),
   ],
   controllers: [MessageController],
-  providers: [MessageService,UserService,CloudinaryService],
+  providers: [ChatGateway,MessageService,UserService,CloudinaryService],
 })
 export class MessageModule {}

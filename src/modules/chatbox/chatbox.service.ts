@@ -21,6 +21,16 @@ export class MessageService {
     });
     return this.messageRepository.save(message);
   }
+
+  async createMessage(content: string, senderId: string, receiverId: string): Promise<Message> {
+    const message = this.messageRepository.create({
+      content,
+      sender: { id: senderId } as User,
+      receiver: { id: receiverId } as User,
+      senderRole: 'user',  // Hoặc có thể đặt theo role thực tế của sender
+    });
+    return this.messageRepository.save(message);
+  }
   
 
   async getMessagesBetweenUsers(userId1: string, userId2: string): Promise<Message[]> {

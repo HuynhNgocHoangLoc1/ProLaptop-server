@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { INestApplication, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import {UserModule} from "./modules/user/user.module";
@@ -16,6 +16,7 @@ import { CartModule } from './modules/cart/cart.module';
 import { PaymentModule } from './modules/zalo-payment/payment.module';
 import { EmailService } from './modules/email/email.service';
 import { MessageModule } from './modules/chatbox/chatbox.module';
+import { configureSocket } from './modules/chatbox/socket.config';
 
 @Module({
   imports: [
@@ -40,4 +41,8 @@ import { MessageModule } from './modules/chatbox/chatbox.module';
     EmailService 
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(app: INestApplication) {
+    configureSocket(app);
+  }
+}
