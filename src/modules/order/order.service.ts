@@ -37,6 +37,8 @@ export class OrderService {
     private readonly orderDetailRepository: Repository<OrderDetail>,
     @InjectRepository(Cart)
     private readonly cartRepository: Repository<Cart>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
     private readonly entityManager: EntityManager,
   ) {}
   async create(createOrderDto: CreateOrderDto) {
@@ -197,17 +199,17 @@ export class OrderService {
 
   async createOrderFromCart(userId: any, body: any) {
     // console.log(userId)
-
+  
     // Lấy các mục giỏ hàng của user mà productId nằm trong danh sách selectedProductIds
     const cartItems = body.carts;
-
+  
     // Kiểm tra xem có mục giỏ hàng nào không
     if (cartItems.length === 0) {
       throw new NotFoundException(
         'No items found in the cart with the selected product IDs',
       );
     }
-
+  
     // Tạo order mới với thông tin userId, date, name và email
     const newOrder = this.ordersRepository.create({
       userId: userId,
@@ -220,23 +222,31 @@ export class OrderService {
       statusDelivery: StatusDelivery.PENDING,
       price: body.totalPrice,
     });
-    
+  
     const savedOrder = await this.ordersRepository.save(newOrder);
-
+  
     // Lưu orderId và productId vào từng OrderDetail, sử dụng Promise.all để chạy song song
-    const orderDetailsPromises = cartItems.map((cartItem: any) => {
+    const orderDetailsPromises = cartItems.map(async (cartItem: any) => {
       const orderDetail = this.orderDetailRepository.create({
         orderId: savedOrder.id,
         productId: cartItem.productId,
         quantity: cartItem.quantity,
         price: cartItem.price,
       });
+  
       // Lưu OrderDetail vào database
-      return this.orderDetailRepository.save(orderDetail);
+      await this.orderDetailRepository.save(orderDetail);
+  
+      // Trừ stockQuantity của product
+      const product = await this.productRepository.findOne(cartItem.productId);
+      if (product) {
+        product.stockQuantity -= cartItem.quantity;
+        await this.productRepository.save(product);
+      }
     });
-
+  
     await Promise.all(orderDetailsPromises);
-
+  
     // Xóa các mục CartItem đã tạo order khỏi giỏ hàng
     cartItems.map(async (cartItem: any) => {
       // console.log("CartItem ID:", cartItem.id); // Kiểm tra ID
@@ -246,9 +256,10 @@ export class OrderService {
         console.log('Cart item has no ID:', cartItem);
       }
     });
-
+  
     return { message: 'Order created successfully', order: savedOrder };
   }
+  
 
   async getListOrderByUser(request: any) {
     const token = request.headers.authorization.split(' ')[1];

@@ -7,7 +7,7 @@ import { Review } from 'src/entities/review.entity';
 import { OrderDetailService } from '../order-detail/order-detail.service';
 import { OrderDetail } from 'src/entities/order-detail.entity';
 import { ReviewService } from '../review/review.service';
-import { Product } from 'src/entities/product.entity';
+import { Product } from '../../entities/product.entity';
 import { Cart } from 'src/entities/cart.entity';
 import { User } from 'src/entities/user.entity';
 import { AdminOrderController } from './admin-order.controller';

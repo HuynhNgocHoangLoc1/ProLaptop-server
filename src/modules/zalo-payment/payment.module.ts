@@ -11,9 +11,10 @@ import { OrderService } from '../order/order.service';
 import { Review } from '../../entities/review.entity';
 import { OrderDetail } from '../../entities/order-detail.entity';
 import { RolesGuard } from '../auth/utils/role.middleware';
+import { Product } from '../../entities/product.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Orders, Cart, User, Review, OrderDetail])],
+  imports: [TypeOrmModule.forFeature([Orders, Cart, User, Review, OrderDetail,Product])],
   controllers: [ZaloPaymentController],
   providers: [ZaloPaymentService, OrderService],
 })
