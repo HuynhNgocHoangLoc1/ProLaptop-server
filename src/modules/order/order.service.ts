@@ -238,7 +238,8 @@ export class OrderService {
       await this.orderDetailRepository.save(orderDetail);
   
       // Trừ stockQuantity của product
-      const product = await this.productRepository.findOne(cartItem.productId);
+      const product = await this.productRepository.findOne({
+        where: { id: cartItem.productId },});
       if (product) {
         product.stockQuantity -= cartItem.quantity;
         await this.productRepository.save(product);
