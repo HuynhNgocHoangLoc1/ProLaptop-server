@@ -16,7 +16,6 @@ import { CartModule } from './modules/cart/cart.module';
 import { PaymentModule } from './modules/zalo-payment/payment.module';
 import { EmailService } from './modules/email/email.service';
 import { MessageModule } from './modules/chatbox/chatbox.module';
-import { configureSocket } from './modules/chatbox/socket.config';
 
 @Module({
   imports: [
@@ -41,8 +40,4 @@ import { configureSocket } from './modules/chatbox/socket.config';
     EmailService 
   ],
 })
-export class AppModule {
-  configure(app: INestApplication) {
-    configureSocket(app);
-  }
-}
+export class AppModule {}

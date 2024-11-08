@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { SocketIoAdapter } from './modules/chatbox/socket.config';
 import * as session from 'express-session';
 import * as passport from 'passport';
 
@@ -8,6 +9,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   
+  // Cấu hình WebSocket Adapter
+  app.useWebSocketAdapter(new SocketIoAdapter(app));
+
   // Cấu hình CORS
   app.enableCors({
     origin: '*', // Đặt '*' để cho phép tất cả các nguồn hoặc chỉ định các nguồn cụ thể
@@ -15,6 +19,7 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Cấu hình Session và Passport
   app.use(
     session({
       secret: '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',
@@ -34,6 +39,7 @@ async function bootstrap() {
     done(null, user);
   });
 
+  // Cấu hình ValidationPipe
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
