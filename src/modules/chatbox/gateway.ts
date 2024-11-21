@@ -9,7 +9,7 @@ import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: 'https://prolaptop-server.onrender.com', // URL của FE (cập nhật đúng với URL của bạn)
+    origin: 'https://prolaptop-server.onrender.com', // URL của BE (cập nhật đúng với URL của bạn)
     credentials: true, // Nếu bạn cần cookie hoặc thông tin xác thực
   },
 })

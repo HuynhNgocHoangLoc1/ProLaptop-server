@@ -13,7 +13,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super({
       clientID: '548809623096-881v6ur935qk6m805vbhadonftrv2tsq.apps.googleusercontent.com',
       clientSecret: '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',
-      callbackURL: 'https://auth.expo.io/@loc021102/mobile/auth/google/callback',
+      callbackURL: 'https://prolaptop-server.onrender.com/api/auth/google/callback',
       scope: ['profile', 'email'],
     });
   }
@@ -33,7 +33,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       };
 
       const token = this.jwtService.sign(payload);
-      const redirectURL = `https://auth.expo.io/@loc021102/mobile?token=${token}`;
+      const redirectURL = `https://prolaptop-server.onrender.com/http://localhost:5173/login?token=${token}`;
       console.log(payload);
       return { accessToken: token, redirectURL };
     } catch (error) {

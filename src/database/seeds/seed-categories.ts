@@ -8,7 +8,7 @@ export async function seedCategories(categoryRepository: Repository<Category>) {
   });
   const category2 = categoryRepository.create({
     name: 'MacBook',
-    iconUrl: 'https://res.cloudinary.com/dh6dvndzn/image/upload/v1727524842/jrsrjjqgrlgxklqidbfs.png',
+    iconUrl: 'https://res.cloudinary.com/dh6dvndzn/image/upload/v1732190362/wyvz4lj3asea5j2tif00.png',
 
   });
   const category3 = categoryRepository.create({

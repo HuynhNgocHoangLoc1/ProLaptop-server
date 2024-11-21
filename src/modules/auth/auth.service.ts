@@ -70,6 +70,7 @@ export class AuthService {
         avatar: user.avatar,
         role: user.role,
         isBlock: user.isBlock,
+        password: user.password,
     };
 }
 
