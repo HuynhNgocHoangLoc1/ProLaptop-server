@@ -1,8 +1,8 @@
-import { AbstractEntity } from 'src/common/entities';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { Product } from './product.entity';
 import { Orders } from './order.entity';
 import { OrderDetail } from './order-detail.entity';
+import { AbstractEntity } from '../common/entities';
 
 @Entity()
 export class Review extends AbstractEntity {

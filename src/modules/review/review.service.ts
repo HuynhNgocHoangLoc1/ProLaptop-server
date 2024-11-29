@@ -3,13 +3,13 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { Review } from 'src/entities/review.entity';
+import { Review } from '../../entities/review.entity';
 import { GetReviewDto } from './dto/get-review.dto';
-import { PageMetaDto } from 'src/common/dtos/pageMeta';
-import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
-import { Order } from 'src/common/enum/enum'
+import { PageMetaDto } from '../../common/dtos/pageMeta';
+import { ResponsePaginate } from '../../common/dtos/responsePaginate';
+import { Order } from '../../common/enum/enum'
 import { validate as uuidValidate } from 'uuid';
-import { UserNotFoundException } from 'src/common/exception/not-found';
+import { UserNotFoundException } from '../../common/exception/not-found';
 
 
 

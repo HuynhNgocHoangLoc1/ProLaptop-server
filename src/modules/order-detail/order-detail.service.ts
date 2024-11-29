@@ -3,13 +3,13 @@ import { CreateOrderDetailDto } from './dto/create-order-detail.dto';
 import { UpdateOrderDetailDto } from './dto/update-order-detail.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { OrderDetail } from 'src/entities/order-detail.entity';
+import { OrderDetail } from '../../entities/order-detail.entity';
 import { GetOrderDetailDto } from './dto/get-order-detail.dto';
-import { Order } from 'src/common/enum/enum'
-import { PageMetaDto } from 'src/common/dtos/pageMeta';
-import { ResponsePaginate } from 'src/common/dtos/responsePaginate';
+import { Order } from '../../common/enum/enum'
+import { PageMetaDto } from '../../common/dtos/pageMeta';
+import { ResponsePaginate } from '../../common/dtos/responsePaginate';
 import { validate as uuidValidate } from 'uuid';
-import { UserNotFoundException } from 'src/common/exception/not-found';
+import { UserNotFoundException } from '../../common/exception/not-found';
 
 
 @Injectable()
