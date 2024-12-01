@@ -14,10 +14,10 @@ export enum PaymentMethod {
 }
 
 export enum StatusDelivery {
-  SUCCESS = 'success',
-  PENDING = 'pending',
-  DELIVERING = 'delivering',
-  CANCELLED = 'cancelled',
+  SUCCESS = 'Success',
+  PENDING = 'Pending',
+  DELIVERING = 'Delivering',
+  CANCELLED = 'Cancelled',
 }
 
 export enum RoleEnum {

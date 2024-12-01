@@ -313,7 +313,7 @@ export class OrderService {
     const dailyRevenue = await this.ordersRepository
       .createQueryBuilder('order')
       .select('DATE(order.createdAt) AS date, SUM(order.price) AS total')
-      .where('order.statusDelivery = :status', { status: 'success' })
+      .where('order.statusDelivery = :status', { status: 'Success' })
       .andWhere('order.createdAt BETWEEN :start AND :end', {
         start: startOfWeek,
         end: endOfWeek,
