@@ -33,6 +33,17 @@ export async function seedUsers(usersRepository: Repository<User>) {
     avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
     role: RoleEnum.USER,
   });
+
+  const user4 = usersRepository.create({
+    userName: 'User1',
+    password: '123',
+    email: 'huynhngochoangloc0211102@gmail.com',
+    gender: GenderEnum.MALE,
+    address: '135 Nguyen Phuoc Nguyen',
+    phoneNumber: '234-567-8901',
+    avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    role: RoleEnum.USER,
+  });
   
-  await usersRepository.save([user1, user2, user3]);
+  await usersRepository.save([user1, user2, user3, user4]);
 }
