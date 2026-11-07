@@ -6,6 +6,7 @@ import { User } from 'src/entities/user.entity';
 import { seedCategories } from '../seeds/seed-categories';
 import { seedProducts } from '../seeds/seed-products';
 import { seedUsers } from '../seeds/seed-users';
+import { seedDemo } from '../seeds/demo/seed-demo';
 
 @Injectable()
 export class SeedingService {
@@ -50,5 +51,10 @@ export class SeedingService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  /** Xoá toàn bộ dữ liệu và seed bộ dữ liệu demo đầy đủ (sản phẩm, khách hàng, đơn hàng, đánh giá, giỏ hàng, chat) */
+  async seedDemo() {
+    return this.dataSource.transaction((manager) => seedDemo(manager));
   }
 }
