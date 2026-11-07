@@ -6,6 +6,7 @@ import * as CryptoJS from 'crypto-js';
 import * as qs from 'qs';
 import { JwtStrategy } from '../auth/utils/jwt.trategy';
 import { OrderService } from '../order/order.service';
+import { getServerUrl } from '../../common/config/app-config';
 
 @Injectable()
 export class ZaloPaymentService {
@@ -18,7 +19,7 @@ export class ZaloPaymentService {
 
     const userId = await JwtStrategy.getUserIdFromToken(token);
 
-    const deployedLink = this.configService.get<string>('DEPLOY_SERVICE_LINK');
+    const deployedLink = getServerUrl();
     const config = {
       app_id: this.configService.get<string>('ZALOPAY_APP_ID'),
       key1: this.configService.get<string>('ZALOPAY_KEY1'),

@@ -7,12 +7,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({
-  cors: {
-    origin: 'https://prolaptop-server.onrender.com', // URL của BE (cập nhật đúng với URL của bạn)
-    credentials: true, // Nếu bạn cần cookie hoặc thông tin xác thực
-  },
-})
+// CORS của socket được cấu hình trong SocketIoAdapter (đọc từ env CLIENT_URL)
+@WebSocketGateway()
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
