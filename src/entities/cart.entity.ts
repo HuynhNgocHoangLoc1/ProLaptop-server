@@ -4,8 +4,6 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -33,15 +31,15 @@ export class Cart extends AbstractEntity {
   @UpdateDateColumn({ type: 'timestamp', nullable: true })
   updatedAt: Date;
 
-  @OneToOne(() => Product, { nullable: true })
+  @ManyToOne(() => Product, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
   product: Product;
 
   @ManyToOne(() => User, (user) => user.cart, {
     nullable: false,
     onDelete: 'CASCADE',
-  }) // Không cho phép giá trị null
-  @JoinColumn({ name: 'userId' }) // Cột productId liên kết với bảng Product
+  })
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   constructor(orderDetail: Partial<Cart>) {
