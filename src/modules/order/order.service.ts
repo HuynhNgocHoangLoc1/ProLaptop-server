@@ -306,61 +306,42 @@ export class OrderService {
 
     return { totalAmount, message: 'Total amount for successful orders' };
   }
+  /**
+   * Doanh thu đơn thành công theo từng ngày của 7 ngày gần nhất (tính cả hôm nay).
+   * Dùng cửa sổ trượt 7 ngày thay vì "tuần hiện tại" để biểu đồ không bị trống vào đầu tuần.
+   */
   async calculateDailySuccessOrdersWeekly() {
-    const startOfWeek = this.getStartOfWeek();
-    const endOfWeek = this.getEndOfWeek();
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(end);
+    start.setDate(start.getDate() - 6);
+    start.setHours(0, 0, 0, 0);
 
-    const dailyRevenue = await this.ordersRepository
+    const dailyRevenue: Array<{ date: Date | string; total: string }> = await this.ordersRepository
       .createQueryBuilder('order')
-      .select('DATE(order.createdAt) AS date, SUM(order.price) AS total')
-      .where('order.statusDelivery = :status', { status: 'Success' })
-      .andWhere('order.createdAt BETWEEN :start AND :end', {
-        start: startOfWeek,
-        end: endOfWeek,
-      })
+      .select('DATE(order.createdAt)', 'date')
+      .addSelect('SUM(order.price)', 'total')
+      .where('order.statusDelivery = :status', { status: StatusDelivery.SUCCESS })
+      .andWhere('order.createdAt BETWEEN :start AND :end', { start, end })
       .groupBy('DATE(order.createdAt)')
-      .orderBy('DATE(order.createdAt)', 'ASC')
       .getRawMany();
 
-    console.log('Daily Revenue:', dailyRevenue); // Ghi log doanh thu hàng ngày
+    const revenueByDate = new Map(
+      dailyRevenue.map((row) => [this.toLocalDateKey(row.date), Number(row.total)]),
+    );
 
-    const result = [];
-    for (
-      let date = startOfWeek;
-      date <= endOfWeek;
-      date.setDate(date.getDate() + 1)
-    ) {
-      const formattedDate = date.toISOString().slice(0, 10); // Định dạng thành YYYY-MM-DD
-      const revenueEntry = dailyRevenue.find(
-        (entry) => {
-            // Kiểm tra kiểu dữ liệu của entry.date
-            if (typeof entry.date === 'string') {
-                return entry.date.slice(0, 10) === formattedDate;
-            } else if (entry.date instanceof Date) {
-                return entry.date.toISOString().slice(0, 10) === formattedDate;
-            }
-            return false; // Nếu không phải chuỗi hoặc Date, trả về false
-        }
-      );
-      console.log(`Checking date: ${formattedDate}, Revenue Entry:`, revenueEntry); // Ghi log từng ngày và doanh thu tương ứng
-      result.push({
-        date: formattedDate,
-        revenue: revenueEntry ? Number(revenueEntry.total) : 0,
-      });
+    const result: Array<{ date: string; revenue: number }> = [];
+    for (const day = new Date(start); day <= end; day.setDate(day.getDate() + 1)) {
+      const key = this.toLocalDateKey(day);
+      result.push({ date: key, revenue: revenueByDate.get(key) ?? 0 });
     }
-
     return result;
-}
-
-  private getStartOfWeek() {
-    const today = new Date();
-    const firstDayOfWeek = today.getDate() - today.getDay() + 1; // Thứ Hai
-    return new Date(today.setDate(firstDayOfWeek));
   }
 
-  private getEndOfWeek() {
-    const today = new Date();
-    const lastDayOfWeek = today.getDate() - today.getDay() + 7; // Chủ Nhật
-    return new Date(today.setDate(lastDayOfWeek));
+  /** YYYY-MM-DD theo giờ local (khớp với DATE() của Postgres trên cột timestamp không timezone) */
+  private toLocalDateKey(value: Date | string): string {
+    if (typeof value === 'string') return value.slice(0, 10);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
   }
 }

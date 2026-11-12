@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-google-oauth20';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
+import { getClientUrl, getServerUrl, requireEnv } from '../../common/config/app-config';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -11,9 +12,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     private readonly jwtService: JwtService,
   ) {
     super({
-      clientID: '548809623096-881v6ur935qk6m805vbhadonftrv2tsq.apps.googleusercontent.com',
-      clientSecret: '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',
-      callbackURL: 'https://prolaptop-server.onrender.com/api/auth/google/callback',
+      clientID: requireEnv('GOOGLE_CLIENT_ID'),
+      clientSecret: requireEnv('GOOGLE_CLIENT_SECRET'),
+      callbackURL: `${getServerUrl()}/api/auth/google/callback`,
       scope: ['profile', 'email'],
     });
   }
@@ -33,7 +34,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       };
 
       const token = this.jwtService.sign(payload);
-      const redirectURL = `https://prolaptop-server.onrender.com/http://localhost:5173/login?token=${token}`;
+      const redirectURL = `${getClientUrl()}/login?token=${token}`;
       console.log(payload);
       return { accessToken: token, redirectURL };
     } catch (error) {

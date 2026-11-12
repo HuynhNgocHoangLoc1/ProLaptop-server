@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { SocketIoAdapter } from './modules/chatbox/socket.config';
 import * as session from 'express-session';
 import * as passport from 'passport';
+import { getCorsOrigin, getPort, requireEnv } from './common/config/app-config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,7 +15,7 @@ async function bootstrap() {
 
   // Cấu hình CORS
   app.enableCors({
-    origin: '*', // Đặt '*' để cho phép tất cả các nguồn hoặc chỉ định các nguồn cụ thể
+    origin: getCorsOrigin(), // Lấy từ CLIENT_URL; chưa khai báo thì cho phép mọi nguồn
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -22,7 +23,7 @@ async function bootstrap() {
   // Cấu hình Session và Passport
   app.use(
     session({
-      secret: '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',
+      secret: requireEnv('SESSION_SECRET'),
       resave: false,
       saveUninitialized: false,
       cookie: { secure: false },
@@ -49,6 +50,6 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(5003);
+  await app.listen(getPort());
 }
 bootstrap();

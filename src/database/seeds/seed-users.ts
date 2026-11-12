@@ -10,7 +10,7 @@ export async function seedUsers(usersRepository: Repository<User>) {
     gender: GenderEnum.MALE,
     address: '123 Elm Street, Springfield',
     phoneNumber: '123-456-7890',
-    avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    avatar: 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Person/Default/3D/person_3d_default.png',
     role: RoleEnum.USER,
   });
   const user2 = usersRepository.create({
@@ -20,7 +20,7 @@ export async function seedUsers(usersRepository: Repository<User>) {
     gender: GenderEnum.FEMALE,
     address: '456 Oak Avenue, Metropolis',
     phoneNumber: '234-567-8901',
-    avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    avatar: 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Woman%20office%20worker/Default/3D/woman_office_worker_3d_default.png',
     role: RoleEnum.ADMIN,
   });
   const user3 = usersRepository.create({
@@ -30,7 +30,7 @@ export async function seedUsers(usersRepository: Repository<User>) {
     gender: GenderEnum.MALE,
     address: '135 Nguyen Phuoc Nguyen',
     phoneNumber: '234-567-8901',
-    avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    avatar: 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Man%20technologist/Default/3D/man_technologist_3d_default.png',
     role: RoleEnum.USER,
   });
 
@@ -41,7 +41,7 @@ export async function seedUsers(usersRepository: Repository<User>) {
     gender: GenderEnum.MALE,
     address: '135 Nguyen Phuoc Nguyen',
     phoneNumber: '234-567-8901',
-    avatar: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    avatar: 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Man%20student/Default/3D/man_student_3d_default.png',
     role: RoleEnum.USER,
   });
   

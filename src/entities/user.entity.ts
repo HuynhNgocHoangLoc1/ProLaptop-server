@@ -38,7 +38,7 @@ export class User extends AbstractEntity {
   phoneNumber: String;
 
   @Column({
-    default: 'https://res.cloudinary.com/dnjkwuc7p/image/upload/v1712043752/avatar/default_avatar.png',
+    default: 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Person/Default/3D/person_3d_default.png',
     nullable: true
   })
   avatar: string;

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ProLaptop Server Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* Layout: one calm scrolling page, short sticky TOC on the left; each request layer has one colour used everywhere. */
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface-2: #f0eee7;
+  --ink: #1d1c19;
+  --muted: #67625a;
+  --line: #e4e0d6;
+  --accent: #0f6e66;
+  --accent-soft: #d8efec;
+
+  --mw: #b4580f;    --mw-bg: #fcebd9;
+  --guard: #b42a3c; --guard-bg: #fbe2e5;
+  --int: #7a4bd1;   --int-bg: #eee6fb;
+  --pipe: #1f5fc4;  --pipe-bg: #e0eafb;
+  --ctrl: #0f6e66;  --ctrl-bg: #d8efec;
+  --svc: #5b6b12;   --svc-bg: #edf2d4;
+  --db: #334155;    --db-bg: #e3e8ef;
+  --ext: #8a5a00;   --ext-bg: #fbefd2;
+
+  --font: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141412; --surface: #1c1b19; --surface-2: #25241f; --ink: #ece9e1; --muted: #a39e92; --line: #34322d;
+    --accent: #4fc2b6; --accent-soft: #173733;
+    --mw: #f0a35c;    --mw-bg: #3a2614;
+    --guard: #f07786; --guard-bg: #3d1a20;
+    --int: #b394f0;   --int-bg: #2a2140;
+    --pipe: #7aa7f0;  --pipe-bg: #17263f;
+    --ctrl: #4fc2b6;  --ctrl-bg: #173733;
+    --svc: #b9cc5a;   --svc-bg: #272d12;
+    --db: #a9b6c9;    --db-bg: #222a35;
+    --ext: #e6b450;   --ext-bg: #33280f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 var(--font); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+code { font-family: var(--mono); font-size: .86em; background: var(--surface-2); padding: 1px 6px; border-radius: 5px; }
+h1 { font-size: 2.2rem; line-height: 1.2; margin: 0 0 12px; letter-spacing: -.02em; text-wrap: balance; }
+h2 { font-size: 1.55rem; line-height: 1.3; margin: 0 0 8px; letter-spacing: -.01em; text-wrap: balance; }
+h3 { font-size: 1.1rem; margin: 32px 0 10px; }
+p { margin: 0 0 14px; max-width: 68ch; }
+ul { margin: 0 0 14px; padding-left: 20px; max-width: 68ch; }
+li { margin-bottom: 6px; }
+.muted { color: var(--muted); }
+.kicker { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+
+/* layout */
+.layout { display: grid; grid-template-columns: 230px minmax(0,1fr); min-height: 100vh; }
+nav.toc { position: sticky; top: 0; height: 100vh; padding: 32px 18px; border-right: 1px solid var(--line); background: var(--surface); }
+nav.toc b { display: block; font-size: 1rem; margin: 0 10px 2px; }
+nav.toc small { display: block; color: var(--muted); margin: 0 10px 22px; font-size: .78rem; }
+nav.toc a { display: block; padding: 7px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: .9rem; }
+nav.toc a:hover { background: var(--surface-2); color: var(--ink); }
+nav.toc a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+main { padding: 56px 56px 120px; min-width: 0; }
+.wrap { max-width: 920px; margin: 0 auto; }
+section { padding-top: 12px; margin-bottom: 84px; }
+.intro { color: var(--muted); font-size: 1.05rem; max-width: 64ch; margin-bottom: 26px; }
+
+/* pieces */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; box-shadow: var(--shadow); }
+.grid { display: grid; gap: 14px; }
+.g3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.g2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.grid > * { min-width: 0; }
+.note { border-left: 3px solid var(--accent); background: var(--surface); border-radius: 0 10px 10px 0; padding: 12px 18px; margin: 20px 0; font-size: .95rem; }
+.note.warn { border-left-color: var(--guard); }
+.note p:last-child { margin: 0; }
+.caption { color: var(--muted); font-size: .85rem; margin: 10px 2px 0; }
+.chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+.c-mw { background: var(--mw-bg); color: var(--mw); }
+.c-guard { background: var(--guard-bg); color: var(--guard); }
+.c-int { background: var(--int-bg); color: var(--int); }
+.c-pipe { background: var(--pipe-bg); color: var(--pipe); }
+.c-ctrl { background: var(--ctrl-bg); color: var(--ctrl); }
+.c-svc { background: var(--svc-bg); color: var(--svc); }
+.c-db { background: var(--db-bg); color: var(--db); }
+.c-ext { background: var(--ext-bg); color: var(--ext); }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.tabs button { border: 1px solid var(--line); background: var(--surface); padding: 6px 14px; border-radius: 999px; font-size: .88rem; cursor: pointer; color: var(--muted); }
+.tabs button:hover { border-color: var(--accent); color: var(--ink); }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+@media (prefers-color-scheme: dark) { .tabs button[aria-selected="true"] { color: #08201d; } }
+
+/* hero facts */
+.facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.fact { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font-size: .88rem; color: var(--muted); }
+.fact b { color: var(--ink); font-family: var(--mono); font-weight: 500; margin-right: 6px; }
+
+/* overview svg */
+.ov svg { display: block; width: 100%; height: auto; }
+.ov-box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.ov-t { fill: var(--ink); font: 600 15px var(--font); }
+.ov-s { fill: var(--muted); font: 400 13px var(--font); }
+.ov-a { stroke: var(--muted); stroke-width: 1.6; fill: none; }
+.ov-ad { stroke: var(--muted); stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+.ah { fill: var(--muted); }
+
+/* folder */
+.folders { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+.folder { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.folder code { background: none; padding: 0; font-weight: 500; color: var(--ink); }
+.folder p { margin: 4px 0 0; font-size: .85rem; color: var(--muted); }
+
+/* concept cards */
+.role { display: flex; flex-direction: column; gap: 8px; }
+.role h3 { margin: 0; font-size: 1.05rem; }
+.role p { margin: 0; font-size: .93rem; color: var(--muted); }
+.role .eg { font-size: .82rem; color: var(--muted); }
+
+/* DI diagram */
+.di { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 12px; align-items: center; }
+.di .col { display: flex; flex-direction: column; gap: 8px; }
+.box { border-radius: 10px; padding: 10px 14px; font-size: .88rem; line-height: 1.4; }
+.box b { display: block; font-family: var(--mono); font-weight: 500; font-size: .85rem; }
+.box span { font-size: .78rem; opacity: .85; }
+.arrow { color: var(--muted); font-size: 1.4rem; text-align: center; }
+.di-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
+pre.mini { background: #1e1d1a; color: #ebe7dc; border-radius: 10px; padding: 14px 18px; font: .82rem/1.65 var(--mono); overflow-x: auto; margin: 16px 0 0; }
+pre.mini i { color: #8f8a7c; }
+pre.mini em { color: #e9a76a; font-style: normal; }
+
+/* layers strip */
+.strip { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 8px; }
+.layer { border-radius: 12px; padding: 12px 10px; text-align: center; transition: opacity .25s, transform .25s, box-shadow .25s; border: 2px solid transparent; }
+.layer b { display: block; font-size: .88rem; }
+.layer span { display: block; font-size: .74rem; opacity: .85; line-height: 1.35; margin-top: 2px; }
+.layer.skip { opacity: .28; }
+.layer.stop { border-color: currentColor; box-shadow: 0 0 0 3px var(--guard-bg); }
+.layer.after { opacity: .12; }
+.steps { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-width: none; }
+.steps li { display: grid; grid-template-columns: 110px minmax(0,1fr); gap: 14px; align-items: baseline; margin: 0; font-size: .93rem; }
+.steps li .chip { justify-self: start; }
+.req { font-family: var(--mono); font-size: .84rem; background: var(--surface-2); border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; overflow-wrap: anywhere; }
+.result { margin-top: 14px; font-size: .9rem; font-weight: 600; }
+.result.bad { color: var(--guard); }
+.result.ok { color: var(--accent); }
+
+/* boot timeline */
+.boot { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; max-width: none; }
+.boot li { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; position: relative; }
+.boot .n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: .8rem; margin-bottom: 8px; }
+.boot b { display: block; font-size: .95rem; margin-bottom: 2px; }
+.boot p { margin: 0; font-size: .86rem; color: var(--muted); }
+.boot .f { font-family: var(--mono); font-size: .72rem; color: var(--muted); margin-top: 6px; }
+
+/* data levels */
+.levels { display: flex; align-items: stretch; gap: 8px; }
+.lvl { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.lvl .h { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; text-align: center; }
+.ent { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 10px; padding: 10px 12px; }
+.ent b { font-family: var(--mono); font-weight: 500; font-size: .9rem; }
+.ent span { display: block; font-size: .78rem; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+.lvl-arrow { align-self: center; color: var(--muted); font-size: 1.3rem; flex: 0 0 auto; }
+
+/* flows */
+.flow-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.flow-meta code { font-size: .82rem; }
+.chain { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 12px 0 4px; }
+.chain i { color: var(--muted); font-style: normal; font-size: .85rem; }
+.mmd { margin-top: 16px; overflow-x: auto; }
+.mmd .out { display: flex; justify-content: center; min-width: 520px; }
+.mmd svg { max-width: 100%; height: auto; }
+.mmd pre { white-space: pre-wrap; font: .8rem var(--mono); color: var(--muted); }
+.flow-notes { margin: 16px 0 0; }
+
+/* erd */
+.erd svg { display: block; width: 100%; height: auto; }
+.t-box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.t-name { font: 600 14px var(--mono); }
+.t-col { font: 400 12.5px var(--mono); fill: var(--ink); }
+.t-key { font: 700 10px var(--font); }
+.t-type { font: 400 11.5px var(--mono); fill: var(--muted); }
+.rel { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+.rel-l { font: 600 11.5px var(--font); fill: var(--muted); paint-order: stroke; stroke: var(--surface); stroke-width: 5px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: .84rem; color: var(--muted); margin-top: 14px; }
+.legend svg { vertical-align: middle; margin-right: 6px; }
+
+/* table */
+details.more { margin-top: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+details.more summary { cursor: pointer; padding: 12px 18px; font-weight: 600; font-size: .93rem; }
+.tw { overflow-x: auto; padding: 0 6px 6px; }
+table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: .78rem; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.m { font-family: var(--mono); font-size: .72rem; font-weight: 500; }
+
+/* warnings */
+.warns { display: grid; gap: 10px; }
+.w { display: grid; grid-template-columns: 28px minmax(0,1fr); gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.w .i { width: 26px; height: 26px; border-radius: 50%; background: var(--guard-bg); color: var(--guard); display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+.w b { display: block; }
+.w p { margin: 2px 0 0; font-size: .9rem; color: var(--muted); }
+
+
+/* core concepts */
+.concepts { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+.concept { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.concept p { margin: 0; font-size: .93rem; }
+.concept p.sub { font-size: .82rem; color: var(--muted); }
+.concept pre.mini { margin: 4px 0 0; }
+.c-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.c-file { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
+.kinds { display: flex; flex-wrap: wrap; gap: 6px; }
+pre.mini s { text-decoration: none; color: #a7cf7a; }
+pre.mini .n, .legend-list .n {
+  display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--accent); color: #fff; font: 700 .68rem var(--font); margin-left: 10px; vertical-align: 1px;
+}
+.anat { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(0,1fr); gap: 18px; align-items: start; }
+.anat pre.mini { margin: 0; }
+.legend-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; max-width: none; }
+.legend-list li { display: grid; grid-template-columns: 24px minmax(0,1fr); gap: 8px; margin: 0; font-size: .9rem; line-height: 1.55; }
+.legend-list .n { margin: 2px 0 0; }
+@media (max-width: 980px) { .anat, .concepts { grid-template-columns: 1fr; } }
+
+/* responsive */
+@media (max-width: 980px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { display: none; }
+  main { padding: 32px 16px 80px; }
+  .folders { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .strip { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .boot { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 620px) {
+  h1 { font-size: 1.75rem; }
+  .g2, .g3, .folders, .boot { grid-template-columns: 1fr; }
+  .strip { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .di { grid-template-columns: 1fr; }
+  .arrow { transform: rotate(90deg); }
+  .steps li { grid-template-columns: 1fr; gap: 2px; }
+  .levels { flex-direction: column; }
+  .lvl-arrow { transform: rotate(90deg); }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc" aria-label="Mục lục">
+  <b>ProLaptop Server</b>
+  <small>Kiến trúc backend</small>
+  <a href="#tong-quan">Tổng quan</a>
+  <a href="#nestjs">Khái niệm cốt lõi</a>
+  <a href="#khoi-chay">App khởi chạy</a>
+  <a href="#request">Một request đi đâu</a>
+  <a href="#du-lieu">Dữ liệu &amp; luồng API</a>
+  <a href="#erd">Database (ERD)</a>
+  <a href="#luu-y">Cần lưu ý</a>
+</nav>
+
+<main><div class="wrap">
+
+<!-- ============ TỔNG QUAN ============ -->
+<section id="tong-quan">
+  <div class="kicker">ProLaptop Server</div>
+  <h1>App chạy như thế nào, từ đầu đến cuối</h1>
+  <p class="intro">Backend cho một cửa hàng laptop: khách đăng ký, xem sản phẩm, thêm vào giỏ, đặt hàng (tiền mặt hoặc ZaloPay), đánh giá và chat với admin. Viết bằng NestJS, lưu dữ liệu ở PostgreSQL qua TypeORM.</p>
+  <div class="facts">
+    <div class="fact"><b>localhost:5003</b>địa chỉ server</div>
+    <div class="fact"><b>/api</b>tiền tố mọi route</div>
+    <div class="fact"><b>11</b>module tính năng</div>
+    <div class="fact"><b>8</b>bảng dữ liệu</div>
+  </div>
+
+  <h3>Nhìn từ xa</h3>
+  <div class="card ov">
+    <svg viewBox="0 0 900 380" role="img" aria-label="Client gọi server NestJS; server dùng PostgreSQL và bốn dịch vụ ngoài">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+      <rect x="10" y="150" width="130" height="80" rx="12" class="ov-box"/>
+      <text x="75" y="185" text-anchor="middle" class="ov-t">Client</text>
+      <text x="75" y="206" text-anchor="middle" class="ov-s">web + admin</text>
+
+      <rect x="190" y="20" width="440" height="340" rx="16" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6 5"/>
+      <text x="210" y="46" class="ov-t" style="fill:var(--accent)">NestJS server</text>
+
+      <rect x="215" y="64" width="390" height="70" rx="10" style="fill:var(--mw-bg)"/>
+      <text x="235" y="92" class="ov-t" style="fill:var(--mw)">Cửa vào · main.ts</text>
+      <text x="235" y="114" class="ov-s">CORS, session, kiểm tra dữ liệu vào</text>
+
+      <rect x="215" y="148" width="390" height="92" rx="10" style="fill:var(--ctrl-bg)"/>
+      <text x="235" y="176" class="ov-t" style="fill:var(--ctrl)">Module tính năng</text>
+      <text x="235" y="198" class="ov-s">auth · user · product · cart · order · payment · chat…</text>
+      <text x="235" y="220" class="ov-s">mỗi module = Controller (nhận request) + Service (xử lý)</text>
+
+      <rect x="215" y="254" width="390" height="80" rx="10" style="fill:var(--db-bg)"/>
+      <text x="235" y="282" class="ov-t" style="fill:var(--db)">TypeORM</text>
+      <text x="235" y="304" class="ov-s">đổi lời gọi TypeScript thành câu SQL</text>
+
+      <rect x="690" y="262" width="190" height="64" rx="12" class="ov-box"/>
+      <text x="785" y="292" text-anchor="middle" class="ov-t">PostgreSQL</text>
+      <text x="785" y="312" text-anchor="middle" class="ov-s">8 bảng</text>
+
+      <rect x="690" y="40" width="190" height="40" rx="10" style="fill:var(--ext-bg)"/><text x="785" y="65" text-anchor="middle" class="ov-s" style="fill:var(--ext);font-weight:600">Google · đăng nhập</text>
+      <rect x="690" y="90" width="190" height="40" rx="10" style="fill:var(--ext-bg)"/><text x="785" y="115" text-anchor="middle" class="ov-s" style="fill:var(--ext);font-weight:600">Cloudinary · ảnh</text>
+      <rect x="690" y="140" width="190" height="40" rx="10" style="fill:var(--ext-bg)"/><text x="785" y="165" text-anchor="middle" class="ov-s" style="fill:var(--ext);font-weight:600">Gmail · gửi OTP</text>
+      <rect x="690" y="190" width="190" height="40" rx="10" style="fill:var(--ext-bg)"/><text x="785" y="215" text-anchor="middle" class="ov-s" style="fill:var(--ext);font-weight:600">ZaloPay · thanh toán</text>
+
+      <path d="M140,190 L213,100" class="ov-a" marker-end="url(#ah)"/>
+      <path d="M410,134 L410,146" class="ov-a" marker-end="url(#ah)"/>
+      <path d="M410,240 L410,252" class="ov-a" marker-end="url(#ah)"/>
+      <path d="M605,294 L688,294" class="ov-a" marker-end="url(#ah)"/>
+      <path d="M605,194 C650,194 650,60 688,60" class="ov-ad" marker-end="url(#ah)"/>
+      <path d="M605,194 C655,194 655,110 688,110" class="ov-ad" marker-end="url(#ah)"/>
+      <path d="M605,194 C660,194 660,160 688,160" class="ov-ad" marker-end="url(#ah)"/>
+      <path d="M605,194 C660,194 660,210 688,210" class="ov-ad" marker-end="url(#ah)"/>
+    </svg>
+  </div>
+  <p class="caption">Request đi từ trên xuống: cửa vào → module → TypeORM → database. Nét đứt là server gọi dịch vụ bên ngoài.</p>
+
+  <h3>Code nằm ở đâu</h3>
+  <div class="folders">
+    <div class="folder"><code>main.ts</code><p>Điểm bắt đầu. Tạo app, bật cấu hình chung, mở cổng 5003.</p></div>
+    <div class="folder"><code>modules/</code><p>Mỗi thư mục là một tính năng: <code>auth</code>, <code>cart</code>, <code>order</code>…</p></div>
+    <div class="folder"><code>entities/</code><p>Mỗi file là một bảng trong database.</p></div>
+    <div class="folder"><code>common/</code><p>Đồ dùng chung: kết nối DB, enum, phân trang.</p></div>
+  </div>
+</section>
+
+<!-- ============ NESTJS ============ -->
+<section id="nestjs">
+  <div class="kicker">Khái niệm cốt lõi</div>
+  <h2>Các khái niệm cốt lõi của NestJS</h2>
+  <p class="intro">Sáu khái niệm dưới đây có mặt trong mọi file của project. Đọc theo thứ tự: mỗi khái niệm dựa trên khái niệm trước.</p>
+
+  <div class="concepts">
+    <div class="card concept">
+      <div class="c-head"><span class="chip c-int">Module</span><span class="c-file">cart.module.ts</span></div>
+      <p>Đơn vị tổ chức code. Mỗi tính năng là một module, khai báo nó có <b>controller</b> nào, <b>provider</b> nào, và cần mượn gì từ module khác (<code>imports</code>). Cả app là một cây module, gốc là <code>AppModule</code>.</p>
+<pre class="mini"><em>@Module</em>({
+  imports: [
+    TypeOrmModule.forFeature([Cart, Product]),
+  ],
+  controllers: [CartController],
+  providers: [CartService],
+})</pre>
+    </div>
+    <div class="card concept">
+      <div class="c-head"><span class="chip c-ctrl">Controller</span><span class="c-file">cart.controller.ts</span></div>
+      <p>Nhận HTTP request ở một URL và trả response. Controller chỉ đọc dữ liệu gửi lên rồi giao việc cho service. Không chứa logic nghiệp vụ, không truy vấn database.</p>
+<pre class="mini"><i>// mọi URL /api/cart/...</i>
+<em>@Controller</em>(<s>'cart'</s>)
+<em>export class</em> CartController { ... }</pre>
+    </div>
+    <div class="card concept">
+      <div class="c-head"><span class="chip c-svc">Provider</span><span class="c-file">providers: [...]</span></div>
+      <p>Bất kỳ class nào Nest có thể <b>tự tạo instance và tiêm vào</b> class khác. Điều kiện: có <code>@Injectable()</code> và được khai báo trong <code>providers</code> của một module.</p>
+      <div class="kinds">
+        <span class="chip c-svc">Service</span><span class="chip c-guard">Guard</span><span class="chip c-int">Strategy</span><span class="chip c-pipe">Gateway</span><span class="chip c-db">Repository</span>
+      </div>
+      <p class="sub">Đều là provider. Service là loại hay gặp nhất.</p>
+    </div>
+    <div class="card concept">
+      <div class="c-head"><span class="chip c-svc">Service</span><span class="c-file">cart.service.ts</span></div>
+      <p>Một provider chứa <b>logic nghiệp vụ</b>: kiểm tra tồn kho, tính tiền, đọc và ghi database, gọi dịch vụ ngoài. Controller gọi service; service có thể gọi service khác.</p>
+<pre class="mini"><em>@Injectable</em>()
+<em>export class</em> CartService { ... }</pre>
+    </div>
+    <div class="card concept">
+      <div class="c-head"><span class="chip c-ext">DI &amp; IoC Container</span><span class="c-file">constructor(...)</span></div>
+      <p><b>Dependency Injection</b>: class không tự <code>new</code> thứ nó cần, chỉ liệt kê trong constructor. <b>IoC Container</b> là bộ phận của Nest <b>tạo instance</b> cho mọi provider lúc khởi động, giữ lại, rồi tiêm vào nơi cần.</p>
+<pre class="mini"><em>constructor</em>(<em>private</em> cartService: CartService) {}
+<i>// không có "new CartService()" ở đâu cả</i></pre>
+    </div>
+    <div class="card concept">
+      <div class="c-head"><span class="chip c-pipe">Decorator</span><span class="c-file">@Something</span></div>
+      <p>Nhãn bắt đầu bằng <code>@</code> dán lên class, hàm hoặc tham số. Nó không tự chạy logic; nó cho Nest biết thứ đó dùng vào việc gì. Mọi khái niệm ở trên đều được khai báo bằng decorator.</p>
+      <div class="kinds">
+        <code>@Module</code><code>@Controller</code><code>@Injectable</code><code>@Get</code><code>@Post</code><code>@Body</code><code>@Param</code><code>@UseGuards</code>
+      </div>
+    </div>
+  </div>
+
+  <h3>IoC Container tạo instance như thế nào</h3>
+  <p>Lúc khởi động, container đọc <code>providers</code> của mọi module, nhìn constructor để biết mỗi class cần gì, tạo thứ được cần trước rồi mới tạo class cần nó. Mỗi instance được tạo <b>một lần</b> và dùng chung tới khi app tắt.</p>
+  <div class="card">
+    <div class="di">
+      <div class="col">
+        <div class="di-label">① tạo trước</div>
+        <div class="box c-db"><b>Repository&lt;Cart&gt;</b><span>do TypeOrmModule.forFeature đăng ký</span></div>
+        <div class="box c-db"><b>Repository&lt;Product&gt;</b><span>đọc tồn kho</span></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="col">
+        <div class="di-label">② tiêm vào</div>
+        <div class="box c-svc"><b>CartService</b><span>new CartService(cartRepo, productRepo)</span></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="col">
+        <div class="di-label">③ tiêm tiếp vào</div>
+        <div class="box c-ctrl"><b>CartController</b><span>new CartController(cartService)</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="caption">Các dòng <code>new …</code> ở trên là việc container tự làm. Trong code của bạn không có dòng nào như vậy.</p>
+
+  <h3>Cấu trúc một Controller</h3>
+  <div class="anat">
+<pre class="mini code"><em>@Controller</em>(<s>'cart'</s>)<span class="n">1</span>
+<em>export class</em> CartController {
+  <em>constructor</em>(<em>private readonly</em> cartService: CartService) {}<span class="n">2</span>
+
+  <em>@Post</em>()<span class="n">3</span>
+  <em>async</em> addToCart(<em>@Body</em>() createCartDto: CreateCartDto) {<span class="n">4</span>
+    <em>return await this</em>.cartService.create(createCartDto);<span class="n">5</span>
+  }
+
+  <em>@Get</em>(<s>':id'</s>)<span class="n">3</span>
+  <em>async</em> findOneById(<em>@Param</em>(<s>'id'</s>) id: string) {<span class="n">4</span>
+    <em>return this</em>.cartService.findOneById(id);<span class="n">5</span>
+  }
+}</pre>
+    <ol class="legend-list">
+      <li><span class="n">1</span><div><b>Đường dẫn gốc.</b> Mọi route trong class bắt đầu bằng <code>/api/cart</code>.</div></li>
+      <li><span class="n">2</span><div><b>Nhận service qua DI.</b> Container tiêm <code>CartService</code> vào.</div></li>
+      <li><span class="n">3</span><div><b>Method + đường dẫn con.</b> <code>@Post()</code> = <code>POST /api/cart</code>, <code>@Get(':id')</code> = <code>GET /api/cart/123</code>.</div></li>
+      <li><span class="n">4</span><div><b>Lấy dữ liệu từ request.</b> <code>@Body()</code> lấy body, <code>@Param('id')</code> lấy phần <code>:id</code> trên URL, <code>@Query()</code> lấy <code>?page=1</code>.</div></li>
+      <li><span class="n">5</span><div><b>Giao việc cho service</b> và trả kết quả. Nest tự đổi object thành JSON.</div></li>
+    </ol>
+  </div>
+  <p class="caption">Rút gọn từ <code>src/modules/cart/cart.controller.ts</code>.</p>
+
+  <h3>Cấu trúc một Service</h3>
+  <div class="anat">
+<pre class="mini code"><em>@Injectable</em>()<span class="n">1</span>
+<em>export class</em> CartService {
+  <em>constructor</em>(
+    <em>@InjectRepository</em>(Cart) <em>private</em> cartRepo: Repository&lt;Cart&gt;,<span class="n">2</span>
+    <em>@InjectRepository</em>(Product) <em>private</em> productRepo: Repository&lt;Product&gt;,
+  ) {}
+
+  <em>async</em> create(dto: CreateCartDto) {
+    <em>const</em> product = <em>await this</em>.productRepo
+      .findOne({ where: { id: dto.productId } });<span class="n">3</span>
+    <em>if</em> (!product)
+      <em>throw new</em> NotFoundException(<s>'Product not found'</s>);<span class="n">4</span>
+    <em>if</em> (dto.quantity &gt; product.stockQuantity)
+      <em>throw new</em> BadRequestException(...);
+
+    <em>const</em> item = <em>this</em>.cartRepo.create(dto);<span class="n">5</span>
+    <em>await this</em>.cartRepo.save(item);
+    <em>return</em> { message: <s>'Added to cart'</s>, cart: item };<span class="n">6</span>
+  }
+}</pre>
+    <ol class="legend-list">
+      <li><span class="n">1</span><div><b>Đánh dấu là provider</b> để container tạo và tiêm được.</div></li>
+      <li><span class="n">2</span><div><b>Nhận Repository qua DI.</b> Repository là công cụ của TypeORM để đọc/ghi một bảng.</div></li>
+      <li><span class="n">3</span><div><b>Đọc database.</b> TypeORM đổi thành <code>SELECT … FROM product WHERE id = …</code>.</div></li>
+      <li><span class="n">4</span><div><b>Kiểm tra nghiệp vụ.</b> Ném exception là đủ; Nest tự trả <code>404</code> / <code>400</code> dạng JSON.</div></li>
+      <li><span class="n">5</span><div><b>Ghi database.</b> <code>create()</code> chỉ tạo object, <code>save()</code> mới <code>INSERT</code>.</div></li>
+      <li><span class="n">6</span><div><b>Trả kết quả</b> về controller.</div></li>
+    </ol>
+  </div>
+  <p class="caption">Rút gọn từ <code>src/modules/cart/cart.service.ts</code>.</p>
+
+  <h3>Request Lifecycle</h3>
+  <p>Trước khi tới Controller, request đi qua các lớp theo thứ tự cố định. Đây là <b>Request Lifecycle</b> của NestJS. Mỗi lớp có một màu, dùng lại ở các sơ đồ bên dưới.</p>
+  <div class="strip" aria-label="Thứ tự các lớp trong Request Lifecycle">
+    <div class="layer c-mw"><b>Middleware</b><span>chuẩn bị chung cho mọi request</span></div>
+    <div class="layer c-guard"><b>Guard</b><span>có được vào không?</span></div>
+    <div class="layer c-int"><b>Interceptor</b><span>xử lý trước / sau handler</span></div>
+    <div class="layer c-pipe"><b>Pipe</b><span>validate và ép kiểu dữ liệu</span></div>
+    <div class="layer c-ctrl"><b>Controller</b><span>route handler</span></div>
+    <div class="layer c-svc"><b>Service</b><span>logic nghiệp vụ</span></div>
+    <div class="layer c-db"><b>Database</b><span>qua TypeORM</span></div>
+  </div>
+
+  <h3>Mỗi lớp nằm ở file nào trong project</h3>
+  <div class="card" style="padding:6px 8px">
+    <div class="tw"><table>
+      <tr><th>Lớp</th><th>Được viết ở</th><th>Được gắn vào route ở</th></tr>
+      <tr><td><span class="chip c-mw">Middleware</span></td><td><code>main.ts</code>: <code>enableCors</code>, <code>app.use(session(...))</code>, <code>passport.initialize()</code></td><td>Tự áp dụng cho mọi request</td></tr>
+      <tr><td><span class="chip c-guard">Guard</span></td><td><code>modules/auth/utils/auth.guard.ts</code> → <b>AuthGuard</b> (kiểm tra JWT)<br/><code>modules/auth/utils/role.middleware.ts</code> → <b>RolesGuard</b> (kiểm tra role; tên file là middleware nhưng là guard)<br/><code>modules/auth/utils/google.guard.ts</code> → <b>GoogleAuthGuard</b></td><td><code>@UseGuards(...)</code> trong <code>order.controller.ts</code>, <code>zaloPayment.controller.ts</code>, <code>auth.controller.ts</code></td></tr>
+      <tr><td><span class="chip c-int">Interceptor</span></td><td><code>FileInterceptor</code> có sẵn của <code>@nestjs/platform-express</code></td><td><code>@UseInterceptors(FileInterceptor('avatar'))</code> trong <code>user</code>, <code>category</code>, <code>product</code> controller</td></tr>
+      <tr><td><span class="chip c-pipe">Pipe</span></td><td><code>ValidationPipe</code> bật toàn cục ở <code>main.ts</code>; luật kiểm tra nằm trong <code>dto/*.dto.ts</code> (<code>@IsNotEmpty()</code>…)</td><td>Tự áp dụng cho tham số có kiểu DTO, ví dụ <code>@Body() dto: CreateCartDto</code></td></tr>
+      <tr><td><span class="chip c-ctrl">Controller</span></td><td><code>modules/*/xxx.controller.ts</code></td><td>Khai báo trong <code>controllers</code> của module</td></tr>
+      <tr><td><span class="chip c-svc">Service</span></td><td><code>modules/*/xxx.service.ts</code></td><td>Khai báo trong <code>providers</code> của module</td></tr>
+      <tr><td><span class="chip c-guard">Exception filter</span></td><td>Dùng filter mặc định của Nest, không có file riêng</td><td>Bắt mọi exception, ví dụ <code>NotFoundException</code> → JSON <code>404</code></td></tr>
+    </table></div>
+  </div>
+
+  <h4 style="margin:22px 0 8px">Ví dụ: gắn Guard vào một route</h4>
+  <div class="anat">
+<pre class="mini code"><i>// src/modules/order/order.controller.ts</i>
+<em>@Post</em>(<s>'/create-from-cart/'</s>)
+<em>@UseGuards</em>(AuthGuard, <em>new</em> RolesGuard([RoleEnum.USER, RoleEnum.ADMIN]))<span class="n">1</span>
+<em>async</em> createOrderFromCart(<em>@Req</em>() request, <em>@Body</em>() body) { ... }</pre>
+    <ol class="legend-list">
+      <li><span class="n">1</span><div>Guard chạy từ trái sang phải. <b>AuthGuard</b> kiểm tra token và gán thông tin user vào <code>request.user</code>; <b>RolesGuard</b> đọc <code>request.user.role</code>. Thiếu token → <code>401</code>, sai role → <code>403</code>, controller không được gọi.</div></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ KHỞI CHẠY ============ -->
+<section id="khoi-chay">
+  <div class="kicker">Khởi chạy</div>
+  <h2>Từ <code>yarn start:dev</code> tới lúc sẵn sàng</h2>
+  <p class="intro">Mọi thứ bắt đầu ở <code>src/main.ts</code>. Sáu bước dưới đây diễn ra trong vài giây.</p>
+  <ol class="boot">
+    <li><div class="n">1</div><b>Đọc module gốc</b><p>Nest bắt đầu từ <code>AppModule</code> và lần ra mọi module con.</p><div class="f">main.ts · app.module.ts</div></li>
+    <li><div class="n">2</div><b>Đọc file .env</b><p>Lấy thông tin database, ZaloPay… cho cả app dùng.</p><div class="f">ConfigModule</div></li>
+    <li><div class="n">3</div><b>Kết nối database</b><p>Kết nối PostgreSQL và tự tạo bảng theo các file entity.</p><div class="f">common/db/db.module.ts</div></li>
+    <li><div class="n">4</div><b>Tạo các service</b><p>Nest tạo từng service và tiêm những thứ chúng cần.</p><div class="f">providers của mỗi module</div></li>
+    <li><div class="n">5</div><b>Gắn route</b><p>Ghép <code>@Controller</code> với <code>@Get</code>, <code>@Post</code>… thành danh sách URL.</p><div class="f">mọi *.controller.ts</div></li>
+    <li><div class="n">6</div><b>Bật cấu hình chung, mở cổng</b><p>Tiền tố <code>/api</code>, CORS, kiểm tra dữ liệu, rồi lắng nghe ở cổng 5003.</p><div class="f">main.ts</div></li>
+  </ol>
+  <div class="note"><p>Bảng trong DB được sinh tự động từ entity (<code>synchronize: true</code>), nên project không có migration. Sửa một cột trong entity rồi khởi động lại là bảng đổi theo.</p></div>
+</section>
+
+<!-- ============ REQUEST ============ -->
+<section id="request">
+  <div class="kicker">Vòng đời request</div>
+  <h2>Một request đi qua những đâu</h2>
+  <p class="intro">Chọn một ví dụ để xem request đi qua những lớp nào của Request Lifecycle. Lớp sáng là lớp request đi qua, lớp mờ là lớp bị bỏ qua.</p>
+  <div class="tabs" role="tablist" id="reqTabs"></div>
+  <div class="card">
+    <div class="req" id="reqLine"></div>
+    <div class="strip" id="reqStrip"></div>
+    <ol class="steps" id="reqSteps"></ol>
+    <div class="result" id="reqResult"></div>
+  </div>
+  <div class="note"><p>Phần lớn route không có Guard, nên chỉ đi Middleware → Pipe → Controller → Service → Database. Chỉ các route cần đăng nhập (đặt hàng, xem đơn, thanh toán) mới có Guard kiểm tra token.</p></div>
+</section>
+
+<!-- ============ DỮ LIỆU & LUỒNG ============ -->
+<section id="du-lieu">
+  <div class="kicker">Dữ liệu &amp; luồng API</div>
+  <h2>Dữ liệu được tạo theo thứ tự nào</h2>
+  <p class="intro">Bảng nào trỏ tới bảng khác thì bảng kia phải có trước. Đọc từ trái sang phải.</p>
+  <div class="card">
+    <div class="levels">
+      <div class="lvl"><div class="h">Có trước</div>
+        <div class="ent"><b>user</b><span>khách &amp; admin</span></div>
+        <div class="ent"><b>category</b><span>hãng laptop</span></div></div>
+      <div class="lvl-arrow">→</div>
+      <div class="lvl"><div class="h">Tiếp theo</div>
+        <div class="ent"><b>product</b><span>cần category</span></div>
+        <div class="ent"><b>message</b><span>cần user</span></div></div>
+      <div class="lvl-arrow">→</div>
+      <div class="lvl"><div class="h">Khi mua</div>
+        <div class="ent"><b>cart</b><span>cần user + product</span></div>
+        <div class="ent"><b>orders</b><span>cần user</span></div></div>
+      <div class="lvl-arrow">→</div>
+      <div class="lvl"><div class="h">Chi tiết đơn</div>
+        <div class="ent"><b>order_detail</b><span>cần orders + product</span></div></div>
+      <div class="lvl-arrow">→</div>
+      <div class="lvl"><div class="h">Sau khi mua</div>
+        <div class="ent"><b>review</b><span>cần order_detail</span></div></div>
+    </div>
+  </div>
+
+  <h3>Các luồng chính, theo đúng thứ tự trên</h3>
+  <p class="muted" style="font-size:.93rem">Mọi URL có tiền tố <code>/api</code>. Sơ đồ đọc từ trên xuống theo thời gian.</p>
+  <div class="tabs" role="tablist" id="flowTabs"></div>
+  <div class="card" id="flowPanel"></div>
+</section>
+
+<!-- ============ ERD ============ -->
+<section id="erd">
+  <div class="kicker">Database</div>
+  <h2>ERD: 8 bảng và cách chúng nối với nhau</h2>
+  <p class="intro">Mỗi hộp là một bảng, chỉ hiện các cột quan trọng. <b>FK</b> (khoá ngoại) là cột trỏ sang bảng khác.</p>
+  <div class="card erd">
+    <svg viewBox="0 0 1000 540" role="img" aria-label="Sơ đồ quan hệ giữa 8 bảng">
+      <defs>
+        <marker id="many" viewBox="0 0 18 18" refX="18" refY="9" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M18,1 L6,9 L18,17 M18,9 L6,9 M3,3 L3,15" stroke="var(--muted)" stroke-width="1.5" fill="none"/></marker>
+        <marker id="one" viewBox="0 0 18 18" refX="18" refY="9" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M10,3 L10,15 M14,3 L14,15" stroke="var(--muted)" stroke-width="1.5" fill="none"/></marker>
+      </defs>
+      <g id="erdTables"></g>
+      <g id="erdRels"></g>
+    </svg>
+    <div class="legend">
+      <span><svg width="40" height="14"><line x1="0" y1="7" x2="40" y2="7" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#one)"/></svg>một</span>
+      <span><svg width="40" height="14"><line x1="0" y1="7" x2="40" y2="7" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#many)"/></svg>nhiều</span>
+      <span>Mọi bảng (trừ message) còn có <code>createdAt</code>, <code>updatedAt</code>, <code>deletedAt</code></span>
+    </div>
+  </div>
+  <h3>Đọc sơ đồ</h3>
+  <ul>
+    <li>Một <b>user</b> có nhiều dòng <b>cart</b> và nhiều <b>orders</b>.</li>
+    <li>Một <b>orders</b> gồm nhiều <b>order_detail</b>; mỗi dòng là một sản phẩm, lưu giá tại lúc mua.</li>
+    <li>Mỗi <b>order_detail</b> được đánh giá tối đa một lần bằng một <b>review</b>.</li>
+    <li>Xoá dữ liệu là <b>xoá mềm</b>: không xoá dòng, chỉ ghi thời điểm vào <code>deletedAt</code>; TypeORM tự bỏ qua các dòng này khi đọc.</li>
+  </ul>
+</section>
+
+<!-- ============ LƯU Ý ============ -->
+<section id="luu-y">
+  <div class="kicker">Cần lưu ý</div>
+  <h2>Những điểm nên biết trước khi sửa code</h2>
+  <div class="warns">
+    <div class="w"><div class="i">1</div><div><b>Secret nằm thẳng trong code</b><p>JWT, Google, Cloudinary, Gmail. Nên chuyển vào <code>.env</code>.</p></div></div>
+    <div class="w"><div class="i">2</div><div><b>Phần lớn route không cần đăng nhập</b><p>Kể cả xoá user, sửa đơn, tạo sản phẩm. Chỉ 5 route có Guard.</p></div></div>
+    <div class="w"><div class="i">3</div><div><b>Mật khẩu lưu nguyên văn khi đăng ký</b><p>Chỉ được mã hoá ở lần đăng nhập đầu tiên.</p></div></div>
+    <div class="w"><div class="i">4</div><div><b>Đặt hàng không dùng transaction</b><p>Lỗi giữa chừng có thể để lại đơn ghi dở; giá cũng lấy từ client gửi lên.</p></div></div>
+    <div class="w"><div class="i">5</div><div><b>Giỏ hàng khai báo quan hệ 1–1 với sản phẩm</b><p>Nên DB cấm hai người cùng có một sản phẩm trong giỏ. Đổi sang <code>@ManyToOne</code> sẽ hết.</p></div></div>
+  </div>
+
+  <details class="more">
+    <summary>Danh sách tất cả API</summary>
+    <div class="tw"><table id="apiTable"></table></div>
+  </details>
+</section>
+
+</div></main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+(function () {
+'use strict';
+var $ = function (s) { return document.querySelector(s); };
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+/* ---------- request examples ---------- */
+var LAYERS = [['mw', 'Middleware'], ['guard', 'Guard'], ['int', 'Interceptor'], ['pipe', 'Pipe'], ['ctrl', 'Controller'], ['svc', 'Service'], ['db', 'Database']];
+var REQ = [
+  { name: 'Đăng nhập', line: 'POST /api/auth/login   { userName, password }',
+    s: { mw: 'Bật CORS, đọc body JSON.', pipe: 'Không có luật kiểm tra cho body này, đi thẳng.', ctrl: 'AuthController.signIn nhận userName, password.', svc: 'AuthService kiểm tra mật khẩu, tạo JWT hạn 2 giờ.', db: 'Tìm user theo userName.' },
+    res: ['ok', '201 · trả về access_token để dùng cho các request sau'] },
+  { name: 'Đăng ký có ảnh', line: 'POST /api/user   (form-data, kèm file avatar)',
+    s: { mw: 'Bật CORS.', int: 'FileInterceptor tách file avatar ra khỏi form.', pipe: 'Kiểm tra đủ userName, password, email…', ctrl: 'UserController.create.', svc: 'UserService upload ảnh lên Cloudinary rồi tạo user.', db: 'INSERT một dòng vào bảng user.' },
+    res: ['ok', '201 · user mới'] },
+  { name: 'Thêm vào giỏ', line: 'POST /api/cart   { userId, productId, quantity }',
+    s: { mw: 'Bật CORS, đọc body JSON.', pipe: 'Kiểm tra đủ 3 field, ép "2" thành số 2.', ctrl: 'CartController.addToCart.', svc: 'CartService kiểm tra tồn kho; đã có trong giỏ thì cộng dồn.', db: 'Đọc product, rồi thêm hoặc cập nhật dòng cart.' },
+    res: ['ok', '201 · dòng giỏ hàng'] },
+  { name: 'Đặt hàng', line: 'POST /api/order/create-from-cart   Authorization: Bearer <token>',
+    s: { mw: 'Bật CORS, đọc body JSON.', guard: 'AuthGuard kiểm tra token; RolesGuard kiểm tra role là user hoặc admin.', pipe: 'Body không có luật kiểm tra, đi thẳng.', ctrl: 'OrderController lấy userId từ token.', svc: 'OrderService tạo đơn, tạo chi tiết đơn, trừ kho, xoá giỏ.', db: 'Ghi vào orders, order_detail, product, cart.' },
+    res: ['ok', '201 · đơn hàng mới, trạng thái Pending'] },
+  { name: 'Đặt hàng thiếu token', line: 'POST /api/order/create-from-cart   (không có token)',
+    s: { mw: 'Bật CORS, đọc body JSON.', guard: 'AuthGuard không thấy token → chặn lại.' }, stop: 'guard',
+    res: ['bad', '401 Unauthorized · các lớp phía sau không chạy'] },
+  { name: 'Đăng ký thiếu thông tin', line: 'POST /api/user   (chỉ có userName)',
+    s: { mw: 'Bật CORS.', int: 'Không có file, đi tiếp.', pipe: 'Thiếu password, email… → chặn lại.' }, stop: 'pipe',
+    res: ['bad', '400 Bad Request · kèm danh sách field còn thiếu'] }
+];
+var reqTabs = $('#reqTabs');
+reqTabs.innerHTML = REQ.map(function (r, i) { return '<button type="button" role="tab" data-i="' + i + '">' + esc(r.name) + '</button>'; }).join('');
+function showReq(i) {
+  var r = REQ[i];
+  Array.prototype.forEach.call(reqTabs.children, function (b, j) { b.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+  $('#reqLine').textContent = r.line;
+  var stopIdx = r.stop ? LAYERS.map(function (l) { return l[0]; }).indexOf(r.stop) : 99;
+  $('#reqStrip').innerHTML = LAYERS.map(function (l, k) {
+    var cls = 'layer c-' + l[0];
+    if (k > stopIdx) cls += ' after';
+    else if (!r.s[l[0]]) cls += ' skip';
+    if (k === stopIdx) cls += ' stop';
+    var sub = k > stopIdx ? 'không tới' : (r.s[l[0]] ? (k === stopIdx ? 'chặn tại đây' : 'đi qua') : 'bỏ qua');
+    return '<div class="' + cls + '"><b>' + l[1] + '</b><span>' + sub + '</span></div>';
+  }).join('');
+  $('#reqSteps').innerHTML = LAYERS.filter(function (l) { return r.s[l[0]]; }).map(function (l) {
+    return '<li><span class="chip c-' + l[0] + '">' + l[1] + '</span><span>' + esc(r.s[l[0]]) + '</span></li>';
+  }).join('');
+  var res = $('#reqResult');
+  res.className = 'result ' + r.res[0];
+  res.textContent = '→ ' + r.res[1];
+}
+reqTabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) showReq(+b.dataset.i); });
+showReq(3);
+
+/* ---------- flows ---------- */
+var FLOWS = [
+  { name: 'Đăng ký', api: 'POST /user', guard: false,
+    desc: 'Đăng ký chính là tạo user. Client gửi form-data, có thể kèm ảnh đại diện.',
+    chain: [['int', 'FileInterceptor'], ['pipe', 'CreateUserDto'], ['ctrl', 'UserController'], ['svc', 'UserService'], ['ext', 'Cloudinary'], ['db', 'user']],
+    mmd: 'sequenceDiagram\n  participant C as Client\n  participant S as UserService\n  participant CL as Cloudinary\n  participant DB as Database\n  C->>S: POST /user (form-data)\n  opt có ảnh\n    S->>CL: upload ảnh\n    CL-->>S: URL ảnh\n  end\n  S->>DB: INSERT user (role = user)\n  S-->>C: 201 user mới',
+    notes: ['Mật khẩu được lưu nguyên văn ở bước này.'] },
+  { name: 'Đăng nhập', api: 'POST /auth/login', guard: false,
+    desc: 'Kiểm tra username và mật khẩu, trả về JWT. Client gửi JWT này trong header ở các request cần đăng nhập.',
+    chain: [['ctrl', 'AuthController'], ['svc', 'AuthService'], ['db', 'user']],
+    mmd: 'sequenceDiagram\n  participant C as Client\n  participant S as AuthService\n  participant DB as Database\n  C->>S: POST /auth/login { userName, password }\n  S->>DB: tìm user theo userName\n  alt sai user hoặc mật khẩu\n    S-->>C: 401\n  else đúng\n    S->>S: tạo JWT { sub: userId, role } hạn 2 giờ\n    S-->>C: 201 { access_token, ... }\n  end',
+    notes: ['Header cho các request sau: Authorization: Bearer <access_token>.', 'Lần đăng nhập đầu, mật khẩu được mã hoá bằng bcrypt rồi lưu lại.'] },
+  { name: 'Đăng nhập Google', api: 'GET /auth/google/login', guard: 'GoogleAuthGuard',
+    desc: 'Chuyển người dùng sang Google, Google gọi lại server, server tạo user nếu chưa có rồi trả JWT về client.',
+    chain: [['guard', 'GoogleAuthGuard'], ['ext', 'Google'], ['svc', 'AuthService'], ['db', 'user']],
+    mmd: 'sequenceDiagram\n  participant B as Trình duyệt\n  participant SV as Server\n  participant G as Google\n  participant DB as Database\n  B->>SV: GET /auth/google/login\n  SV-->>B: chuyển sang Google\n  B->>G: đăng nhập, đồng ý\n  G-->>SV: gọi /auth/google/callback kèm profile\n  SV->>DB: tìm user theo email, chưa có thì tạo\n  SV-->>B: chuyển về client kèm ?token=JWT',
+    notes: ['Địa chỉ callback đang trỏ tới bản deploy, chạy local vẫn chuyển sang domain đó.'] },
+  { name: 'Quên mật khẩu', api: 'POST /auth/request-password-reset', guard: false,
+    desc: 'Ba bước: xin mã OTP qua email, xác minh mã, đặt mật khẩu mới.',
+    chain: [['svc', 'AuthService'], ['ext', 'Gmail'], ['db', 'user.otp']],
+    mmd: 'sequenceDiagram\n  participant C as Client\n  participant S as AuthService\n  participant M as Gmail\n  participant DB as Database\n  C->>S: 1. request-password-reset { email }\n  S->>DB: lưu OTP 4 số, hạn 15 phút\n  S->>M: gửi OTP\n  C->>S: 2. verify-otp { email, otp }\n  S->>DB: kiểm tra và xoá OTP\n  C->>S: 3. reset-password { email, newPassword }\n  S->>DB: lưu mật khẩu mới (đã mã hoá)',
+    notes: ['Bước 3 hiện không kiểm tra bước 2 đã xong.'] },
+  { name: 'Sản phẩm', api: 'POST /product · GET /product', guard: false,
+    desc: 'Admin tạo category trước rồi tạo product. Khách xem danh sách có phân trang và tìm theo tên.',
+    chain: [['int', 'FileInterceptor'], ['pipe', 'DTO'], ['ctrl', 'ProductController'], ['svc', 'ProductService'], ['db', 'category · product']],
+    mmd: 'sequenceDiagram\n  participant A as Admin / Khách\n  participant S as ProductService\n  participant DB as Database\n  A->>S: POST /product (form-data + ảnh)\n  S->>DB: category có tồn tại?\n  S->>DB: INSERT product\n  S-->>A: 201 product\n  A->>S: GET /product?page=1&take=10&search=mac\n  S->>DB: lọc theo tên, lấy 10 dòng + tổng số\n  S-->>A: 200 { data, meta }',
+    notes: ['Mọi API danh sách đều nhận ?page, ?take, ?search và trả về { data, meta }.'] },
+  { name: 'Giỏ hàng', api: 'POST /cart', guard: false,
+    desc: 'Thêm sản phẩm vào giỏ. Nếu đã có thì cộng dồn số lượng, nhưng không vượt quá tồn kho.',
+    chain: [['pipe', 'CreateCartDto'], ['ctrl', 'CartController'], ['svc', 'CartService'], ['db', 'product · cart']],
+    mmd: 'sequenceDiagram\n  participant C as Client\n  participant S as CartService\n  participant DB as Database\n  C->>S: POST /cart { userId, productId, quantity }\n  S->>DB: đọc product\n  alt vượt tồn kho\n    S-->>C: 400\n  else đã có trong giỏ\n    S->>DB: cộng dồn số lượng\n  else chưa có\n    S->>DB: thêm dòng cart\n  end\n  S-->>C: 201',
+    notes: ['Xem giỏ: GET /user/:id/carts. Giảm 1: DELETE /cart/decrease/:userId/:productId.'] },
+  { name: 'Đặt hàng', api: 'POST /order/create-from-cart', guard: 'cần đăng nhập',
+    desc: 'Chuyển các món trong giỏ thành một đơn hàng, thanh toán khi nhận hàng.',
+    chain: [['guard', 'AuthGuard + RolesGuard'], ['ctrl', 'OrderController'], ['svc', 'OrderService'], ['db', 'orders · order_detail · product · cart']],
+    mmd: 'sequenceDiagram\n  participant C as Client\n  participant G as Guard\n  participant S as OrderService\n  participant DB as Database\n  C->>G: POST /order/create-from-cart + token\n  G->>G: token hợp lệ? role đúng?\n  G->>S: cho đi tiếp\n  S->>DB: tạo orders (Pending)\n  S->>DB: tạo order_detail cho từng món\n  S->>DB: trừ tồn kho product\n  S->>DB: xoá các dòng cart\n  S-->>C: 201 đơn hàng',
+    notes: ['Bốn bước ghi không nằm trong transaction, lỗi giữa chừng có thể để lại dữ liệu dở.'] },
+  { name: 'Thanh toán ZaloPay', api: 'POST /payment/zalo/payment', guard: 'cần đăng nhập',
+    desc: 'Đơn chỉ được tạo sau khi ZaloPay báo thanh toán thành công qua callback.',
+    chain: [['guard', 'Guard'], ['svc', 'ZaloPaymentService'], ['ext', 'ZaloPay'], ['svc', 'OrderService'], ['db', 'orders …']],
+    mmd: 'sequenceDiagram\n  participant C as Client\n  participant S as Server\n  participant Z as ZaloPay\n  participant DB as Database\n  C->>S: POST /payment/zalo/payment (giỏ hàng)\n  S->>Z: tạo giao dịch, gửi kèm giỏ hàng\n  Z-->>C: link thanh toán\n  C->>Z: khách thanh toán\n  Z->>S: POST /payment/zalo/callback\n  S->>S: kiểm tra chữ ký\n  S->>DB: tạo đơn như luồng Đặt hàng\n  S-->>Z: success',
+    notes: ['ZaloPay phải gọi tới được server, nên cần một URL public (DEPLOY_SERVICE_LINK).'] },
+  { name: 'Đánh giá', api: 'GET /order · POST /review', guard: 'GET /order cần đăng nhập',
+    desc: 'Khách xem đơn của mình, chọn món đã mua để đánh giá.',
+    chain: [['svc', 'OrderService'], ['svc', 'ReviewService'], ['db', 'orders · review']],
+    mmd: 'sequenceDiagram\n  participant C as Client\n  participant S as Server\n  participant DB as Database\n  C->>S: GET /order?status=Success + token\n  S->>DB: đơn của user, kèm chi tiết và review\n  S-->>C: danh sách đơn\n  C->>S: POST /review { orderDetailId, rating, comment }\n  S->>DB: INSERT review\n  S-->>C: 201',
+    notes: ['Mỗi dòng chi tiết đơn chỉ có tối đa một review.'] },
+  { name: 'Chat', api: 'POST /messages · WebSocket', guard: false,
+    desc: 'REST để lưu và đọc lịch sử; WebSocket để tin nhắn tới người nhận ngay lập tức.',
+    chain: [['ctrl', 'MessageController'], ['svc', 'MessageService'], ['db', 'message'], ['int', 'ChatGateway']],
+    mmd: 'sequenceDiagram\n  participant U as Khách\n  participant S as Server\n  participant DB as Database\n  participant A as Admin\n  U->>S: POST /messages (lưu tin)\n  S->>DB: INSERT message\n  U->>S: socket: sendMessage\n  S-->>A: socket: receive_message\n  A->>S: GET /messages/:u1/:u2 (lịch sử)',
+    notes: ['Gateway phát tin cho mọi client đang kết nối; client tự lọc tin của mình.'] }
+];
+var flowTabs = $('#flowTabs');
+flowTabs.innerHTML = FLOWS.map(function (f, i) { return '<button type="button" role="tab" data-i="' + i + '">' + (i + 1) + '. ' + esc(f.name) + '</button>'; }).join('');
+var mmdN = 0;
+function css(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function initMermaid() {
+  if (!window.mermaid) return false;
+  window.mermaid.initialize({
+    startOnLoad: false, securityLevel: 'strict', theme: 'base',
+    fontFamily: 'Be Vietnam Pro, system-ui, sans-serif',
+    sequence: { mirrorActors: false, wrap: true, width: 170, messageFontSize: 14, actorFontSize: 14, noteFontSize: 13, boxMargin: 8 },
+    themeVariables: {
+      background: css('--surface'), primaryColor: css('--accent-soft'), primaryTextColor: css('--ink'), primaryBorderColor: css('--accent'),
+      lineColor: css('--muted'), textColor: css('--ink'), actorBkg: css('--accent-soft'), actorBorder: css('--accent'), actorTextColor: css('--ink'),
+      actorLineColor: css('--line'), signalColor: css('--muted'), signalTextColor: css('--ink'),
+      labelBoxBkgColor: css('--surface-2'), labelBoxBorderColor: css('--line'), labelTextColor: css('--ink'), loopTextColor: css('--muted'),
+      noteBkgColor: css('--ext-bg'), noteBorderColor: css('--ext'), noteTextColor: css('--ink')
+    }
+  });
+  return true;
+}
+var mermaidReady = null;
+function showFlow(i) {
+  var f = FLOWS[i];
+  Array.prototype.forEach.call(flowTabs.children, function (b, j) { b.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+  var g = f.guard ? '<span class="chip c-guard">' + esc(f.guard) + '</span>' : '<span class="chip" style="background:var(--surface-2);color:var(--muted)">không cần đăng nhập</span>';
+  $('#flowPanel').innerHTML =
+    '<div class="flow-meta"><code>' + esc(f.api) + '</code>' + g + '</div>' +
+    '<p style="margin-bottom:6px">' + esc(f.desc) + '</p>' +
+    '<div class="chain">' + f.chain.map(function (c) { return '<span class="chip c-' + c[0] + '">' + esc(c[1]) + '</span>'; }).join('<i>→</i>') + '</div>' +
+    '<div class="mmd"><div class="out"><span class="muted" style="font-size:.85rem">Đang vẽ sơ đồ…</span></div></div>' +
+    '<ul class="flow-notes">' + f.notes.map(function (n) { return '<li class="muted" style="font-size:.9rem">' + esc(n) + '</li>'; }).join('') + '</ul>';
+  var out = document.querySelector('#flowPanel .out');
+  if (mermaidReady === null) mermaidReady = initMermaid();
+  if (!mermaidReady) { out.innerHTML = '<pre>' + esc(f.mmd) + '</pre>'; return; }
+  window.mermaid.render('m' + (mmdN++), f.mmd).then(function (r) { out.innerHTML = r.svg; }).catch(function () { out.innerHTML = '<pre>' + esc(f.mmd) + '</pre>'; });
+}
+flowTabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) showFlow(+b.dataset.i); });
+showFlow(0);
+
+/* ---------- ERD (static SVG built from data) ---------- */
+var W = 200, HH = 36, RH = 24;
+var T = {
+  user:         { x: 20,  y: 20,  c: 'int',  cols: [['id', 'uuid', 'PK'], ['email', 'varchar'], ['password', 'varchar'], ['role', 'user | admin'], ['isBlock', 'boolean']] },
+  cart:         { x: 280, y: 20,  c: 'ctrl', cols: [['id', 'uuid', 'PK'], ['userId', 'uuid', 'FK'], ['productId', 'uuid', 'FK'], ['quantity', 'int']] },
+  product:      { x: 540, y: 20,  c: 'pipe', cols: [['id', 'uuid', 'PK'], ['categoryId', 'uuid', 'FK'], ['name', 'varchar'], ['price', 'int'], ['stockQuantity', 'int']] },
+  category:     { x: 780, y: 20,  c: 'int',  cols: [['id', 'uuid', 'PK'], ['name', 'varchar'], ['iconUrl', 'varchar']] },
+  message:      { x: 20,  y: 330, c: 'pipe', cols: [['id', 'uuid', 'PK'], ['senderId', 'uuid', 'FK'], ['receiverId', 'uuid', 'FK'], ['content', 'varchar'], ['isRead', 'boolean']] },
+  orders:       { x: 280, y: 330, c: 'ctrl', cols: [['id', 'uuid', 'PK'], ['userId', 'uuid', 'FK'], ['price', 'int'], ['paymentMethod', 'enum'], ['statusDelivery', 'enum']] },
+  order_detail: { x: 540, y: 330, c: 'svc',  cols: [['id', 'uuid', 'PK'], ['orderId', 'uuid', 'FK'], ['productId', 'uuid', 'FK'], ['quantity', 'int'], ['price', 'int']] },
+  review:       { x: 780, y: 330, c: 'mw',   cols: [['id', 'uuid', 'PK'], ['productId', 'uuid', 'FK'], ['orderDetailId', 'uuid', 'FK'], ['rating', 'int'], ['comment', 'varchar']] }
+};
+function h(t) { return HH + t.cols.length * RH + 10; }
+var tg = '';
+Object.keys(T).forEach(function (n) {
+  var t = T[n], H = h(t);
+  tg += '<g><rect x="' + t.x + '" y="' + t.y + '" width="' + W + '" height="' + H + '" rx="10" class="t-box"/>' +
+    '<path d="M' + t.x + ',' + (t.y + HH) + ' V' + (t.y + 10) + ' Q' + t.x + ',' + t.y + ' ' + (t.x + 10) + ',' + t.y + ' H' + (t.x + W - 10) + ' Q' + (t.x + W) + ',' + t.y + ' ' + (t.x + W) + ',' + (t.y + 10) + ' V' + (t.y + HH) + ' Z" style="fill:var(--' + t.c + '-bg)"/>' +
+    '<text x="' + (t.x + 14) + '" y="' + (t.y + 23) + '" class="t-name" style="fill:var(--' + t.c + ')">' + n + '</text>';
+  t.cols.forEach(function (c, k) {
+    var y = t.y + HH + 20 + k * RH;
+    var x = t.x + 14;
+    if (c[2]) {
+      tg += '<text x="' + x + '" y="' + y + '" class="t-key" style="fill:var(--' + (c[2] === 'PK' ? 'ext' : 'pipe') + ')">' + c[2] + '</text>';
+    }
+    tg += '<text x="' + (x + 24) + '" y="' + y + '" class="t-col">' + esc(c[0]) + '</text>' +
+      '<text x="' + (t.x + W - 14) + '" y="' + y + '" text-anchor="end" class="t-type">' + esc(c[1]) + '</text>';
+  });
+  tg += '</g>';
+});
+document.getElementById('erdTables').innerHTML = tg;
+
+/* each relation: path from the "one" side to the "many" side */
+var R = [
+  { d: 'M220,70 H280', m: 'many', l: [250, 54, '1 — n'] },                                 // user → cart
+  { d: 'M540,118 H480', m: 'many', l: [510, 102, '1 — n'] },                              // product → cart
+  { d: 'M780,70 H740', m: 'many', l: [760, 54, '1 — n'] },                                // category → product
+  { d: 'M100,' + (20 + h(T.user)) + ' V330', m: 'many', l: [100, 260, 'gửi / nhận'] },     // user → message
+  { d: 'M180,' + (20 + h(T.user)) + ' V270 H340 V330', m: 'many', l: [260, 262, '1 — n'] },// user → orders
+  { d: 'M480,380 H540', m: 'many', l: [510, 364, '1 — n'] },                              // orders → order_detail
+  { d: 'M620,' + (20 + h(T.product)) + ' V330', m: 'many', l: [620, 268, '1 — n'] },       // product → order_detail
+  { d: 'M740,380 H780', m: 'one', l: [760, 364, '1 — 1'] },                               // order_detail → review
+  { d: 'M700,' + (20 + h(T.product)) + ' V290 H860 V330', m: 'many', l: [800, 282, '1 — n'] } // product → review
+];
+document.getElementById('erdRels').innerHTML = R.map(function (r) {
+  return '<path d="' + r.d + '" class="rel" marker-start="url(#one)" marker-end="url(#' + r.m + ')"/>' +
+    '<text x="' + r.l[0] + '" y="' + r.l[1] + '" text-anchor="middle" class="rel-l">' + r.l[2] + '</text>';
+}).join('');
+
+/* ---------- API table ---------- */
+var API = [
+  ['Tài khoản', [['POST', '/auth/login', 'Đăng nhập'], ['GET', '/auth/google/login', 'Đăng nhập Google'], ['POST', '/auth/request-password-reset', 'Xin OTP'], ['POST', '/auth/verify-otp', 'Xác minh OTP'], ['POST', '/auth/reset-password', 'Đặt mật khẩu mới'], ['POST', '/user', 'Đăng ký'], ['GET · PATCH · DELETE', '/user/:id', 'Xem, sửa, xoá user'], ['POST', '/user/block/:userId', 'Khoá / mở user']]],
+  ['Sản phẩm', [['GET · POST', '/category', 'Danh sách, tạo hãng'], ['GET · POST', '/product', 'Danh sách, tạo sản phẩm'], ['GET · PATCH · DELETE', '/product/:id', 'Xem, sửa, xoá sản phẩm'], ['GET', '/product/:id/categoryId', 'Sản phẩm theo hãng']]],
+  ['Mua hàng', [['POST', '/cart', 'Thêm vào giỏ'], ['GET', '/user/:id/carts', 'Xem giỏ'], ['DELETE', '/cart/decrease/:userId/:productId', 'Giảm 1'], ['POST', '/order/create-from-cart', 'Đặt hàng (cần đăng nhập)'], ['GET', '/order?status=', 'Đơn của tôi (cần đăng nhập)'], ['PATCH', '/order/:id', 'Đổi trạng thái đơn'], ['POST', '/payment/zalo/payment', 'Thanh toán ZaloPay (cần đăng nhập)'], ['POST', '/payment/zalo/callback', 'ZaloPay gọi về'], ['POST', '/review', 'Đánh giá']]],
+  ['Khác', [['POST', '/messages', 'Gửi tin chat'], ['GET', '/messages/:u1/:u2', 'Lịch sử chat'], ['GET', '/admin/order', 'Mọi đơn (admin)'], ['GET', '/order/total-success', 'Tổng doanh thu'], ['POST', '/seeding', 'Tạo lại dữ liệu mẫu']]]
+];
+$('#apiTable').innerHTML = '<tr><th>Nhóm</th><th>Method</th><th>Path</th><th>Làm gì</th></tr>' + API.map(function (g) {
+  return g[1].map(function (r, k) {
+    return '<tr><td>' + (k === 0 ? '<b>' + g[0] + '</b>' : '') + '</td><td class="m">' + r[0] + '</td><td><code>' + esc(r[1]) + '</code></td><td>' + esc(r[2]) + '</td></tr>';
+  }).join('');
+}).join('');
+
+/* ---------- TOC highlight ---------- */
+var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+if ('IntersectionObserver' in window) {
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id); }); });
+  }, { rootMargin: '0px 0px -70% 0px' });
+  links.forEach(function (a) { var s = document.querySelector(a.getAttribute('href')); if (s) io.observe(s); });
+}
+})();
+</script>
+</body>
+</html>
