@@ -16,7 +16,7 @@ export async function seedUsers(usersRepository: Repository<User>) {
   const user2 = usersRepository.create({
     userName: 'admin',
     password: '12344',
-    email: 'lochnhgcd201574@fpt.edu.vn',
+    email: 'doanthuthao091203@gmail.com',
     gender: GenderEnum.FEMALE,
     address: '456 Oak Avenue, Metropolis',
     phoneNumber: '234-567-8901',
@@ -44,6 +44,6 @@ export async function seedUsers(usersRepository: Repository<User>) {
     avatar: 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Man%20student/Default/3D/man_student_3d_default.png',
     role: RoleEnum.USER,
   });
-  
+
   await usersRepository.save([user1, user2, user3, user4]);
 }
