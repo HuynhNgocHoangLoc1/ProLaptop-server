@@ -101,7 +101,7 @@ export async function seedDemo(manager: EntityManager) {
   const admin = manager.create(User, {
     userName: DEMO_ACCOUNTS.admin.userName,
     password: await hash(DEMO_ACCOUNTS.admin.password),
-    email: 'lochnhgcd201574@fpt.edu.vn',
+    email: 'doanthuthao091203@gmail.com',
     gender: GenderEnum.FEMALE,
     address: '135 Nguyễn Phước Nguyên, Thanh Khê, Đà Nẵng',
     phoneNumber: '0905123456',
