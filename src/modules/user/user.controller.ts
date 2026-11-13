@@ -10,12 +10,14 @@ import {
   UploadedFile,
   ValidationPipe,
   Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserService } from './userService';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetUserDto } from './dto/get-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('user')
 export class UserController {
@@ -43,6 +45,15 @@ export class UserController {
       message: 'Total user count fetched successfully',
     };
   }
+
+  @Get('admin')
+  async findAdmin() {
+    const admin = await this.userService.findAdminUser();
+    if (!admin) {
+      throw new NotFoundException('Admin user not found');
+    }
+    return admin;
+  }
   
   @Get(':id')
   async findOneById(@Param('id') id: string) {
@@ -58,6 +69,19 @@ export class UserController {
   ) {
     const result = await this.userService.update(id, updateUserDto, avatar);
     return { result, message: 'Successfully update user' };
+  }
+
+  @Patch(':id/password')
+  async changePassword(
+    @Param('id') id: string,
+    @Body(new ValidationPipe()) changePasswordDto: ChangePasswordDto,
+  ) {
+    await this.userService.changePassword(
+      id,
+      changePasswordDto.currentPassword,
+      changePasswordDto.newPassword,
+    );
+    return { message: 'Password updated successfully' };
   }
 
   @Delete(':id')

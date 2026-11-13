@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../../entities/user.entity";
 import { Repository, EntityManager } from "typeorm";
@@ -11,6 +11,7 @@ import { PageMetaDto } from "src/common/dtos/pageMeta";
 import { ResponsePaginate } from "src/common/dtos/responsePaginate";
 import { validate as uuidValidate } from 'uuid';
 import { Orders } from "src/entities/order.entity";
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -64,6 +65,12 @@ export class UserService {
         return user;
     }
 
+    async findAdminUser() {
+        return this.usersRepository.findOne({
+            where: { role: RoleEnum.ADMIN },
+        });
+    }
+
     async update(id: string, updateUserDto: UpdateUserDto, avatar?: Express.Multer.File) { // Thay đổi từ Multer.File sang Express.Multer.File
         try {
             const user = await this.usersRepository.findOneBy({ id });
@@ -76,7 +83,6 @@ export class UserService {
                 user.avatar = await this.uploadAndReturnUrl(avatar);
             }
             user.userName = updateUserDto.userName;
-            user.password = updateUserDto.password;
             user.email = updateUserDto.email;
             user.gender = updateUserDto.gender;
             user.address = updateUserDto.address;
@@ -184,6 +190,30 @@ export class UserService {
       
       async clearOtp(userId: string): Promise<void> {
         await this.usersRepository.update(userId, { otp: null, otpExpires: null });
+      }
+
+      async changePassword(
+        userId: string,
+        currentPassword: string,
+        newPassword: string,
+      ): Promise<void> {
+        const user = await this.usersRepository.findOneBy({ id: userId });
+        if (!user) {
+          throw new NotFoundException('User not found');
+        }
+
+        const passwordIsHashed =
+          user.password?.length === 60 && user.password.startsWith('$2');
+        const currentPasswordMatches = passwordIsHashed
+          ? await bcrypt.compare(currentPassword, user.password)
+          : currentPassword === user.password;
+
+        if (!currentPasswordMatches) {
+          throw new UnauthorizedException('Current password is incorrect');
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await this.usersRepository.save(user);
       }
       
       async updatePassword(userId: string, hashedPassword: string): Promise<void> {
